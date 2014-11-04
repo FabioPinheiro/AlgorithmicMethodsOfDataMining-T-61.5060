@@ -13,10 +13,12 @@ import javax.management.RuntimeErrorException;
 public class Main {
 
 	public static void main(String[] args) throws IOException {
-		final FileReader dataFile = new FileReader("./tweets_15m.txt");
+		final FileReader dataFile = new FileReader("tweets_15m.txt");
+		final FileReader dataFile2 = new FileReader("tweets_15m.txt");
 		//System.out.println(new File("./tweets_15m.txt").getCanonicalPath());
 		//final Reader r = new Reader(dataFile);
 		final LineNumberReader reader = new LineNumberReader(dataFile);
+		final LineNumberReader reader2 = new LineNumberReader(dataFile2);
 		//final BufferedReader reader = new BufferedReader(dataFile);
 		
 		HashMap<String, Valor> mapa = mapcreator(reader);
@@ -24,11 +26,16 @@ public class Main {
 		//System.out.println(reader.getLineNumber());
 		//System.out.println(reader.markSupported());
 		ArrayList<Valor> sortByNumberOfTweets = task1(mapa,reader);
-		reader.setLineNumber(5000);
+		task2(reader2,  sortByNumberOfTweets, 1);
 		
-		ArrayList<String> subSpace = subspace("frequent", 2, sortByNumberOfTweets);
-		for (int i =0; i< subSpace.size();i++)
-			System.out.println(subSpace.get(i));
+		String[] x ={"a","admit","been","c","case","co","confirm","d","ebola","ha","hospit","howard","http","lik","not","of","paty","symptom","t","to","tvnl","u","viru","with","ww","zl"};
+		String[] y ={"airport","bathroom","clean","door","ebola","ebolaansw","ground","handl","left","of","on","paty","ppl","reider","ronanfarrow","sweat","the","think","toilet","who"};
+		String[] z ={"asnowros","at","c","co","d","ebola","hospit","howard","http","in","lik","paty","rt","symptom","t","time","treat","univer","vmwjjgucrl","washington","with"};
+		System.out.println(angle(x, z, new ArrayList<String>()));
+		//angle=1.031476373310863		 
+				 
+		//for (int i =0; i< subSpace.size();i++)
+		//	System.out.println(subSpace.get(i));
 		//for (int i =0; i< sortByNumberOfTweets.size();i++)
 		//	System.out.println(sortByNumberOfTweets.get(i).text + "   numberOfTweets=" + sortByNumberOfTweets.get(i).numberOfTweets);
 		//for (Entry<String, Valor> entry : mapa.entrySet())
@@ -57,7 +64,34 @@ public class Main {
 		}
 	}
 	
-	
+	public static void task2(LineNumberReader reader, ArrayList<Valor> sortByNumberOfTweets, int Q) throws IOException{
+		int D = 100*2;
+		double angle = Math.PI/2;
+		int index = -1;
+		ArrayList<String> subSpace = subspace("frequent", D, sortByNumberOfTweets);
+		//if(Q>1000) throw new RuntimeException();
+		String stringLine = reader.readLine();
+		System.out.println(stringLine);
+		
+		String[] tokensX = stringLine.split("\\s+");
+		for(int i=1; i<1000;i++) reader.readLine();
+		//reader.setLineNumber(1000);
+		
+		for(int ĺine = 0; ĺine<5000; ĺine++){
+			stringLine = reader.readLine();
+			String[]  tokensY = stringLine.split("\\s+");
+			double aux = angle(tokensX, tokensY, subSpace);
+			if(aux<angle){
+				angle = aux;
+				//index = ĺine + 1000;
+				index = reader.getLineNumber();//ĺine + 1000;
+				System.out.println(stringLine);
+				System.out.println("index=" + index + "  angle=" + angle);
+				//textAUX = stringLine;
+			}
+			
+		}
+	}
 	public static ArrayList<Valor> task1(HashMap mapa, BufferedReader reader) throws IOException{
 		String stringLine = reader.readLine();
 		String[] token = stringLine.split("\\s+");
@@ -97,9 +131,9 @@ public class Main {
 		for(int i = 0; i< x.length; i++)
 			for(int j = 0; j< y.length; j++)
 				if(x[i].equals(y[j]))
-					if(subspace.contains(x[i])) //have to be in the subspace
+					//if(subspace.contains(x[i])) //have to be in the subspace
 						cont++;
-		return Math.acos(cont/(Math.sqrt(x.length)+Math.sqrt(y.length)));
+		return Math.acos(cont/(Math.sqrt(x.length)*Math.sqrt(y.length)));
 	}
 	
 	public static ArrayList<String> subspace(String f, int d, ArrayList<Valor> sortByNumberOfTweets){
