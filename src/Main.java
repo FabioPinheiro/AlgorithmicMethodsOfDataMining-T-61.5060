@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.TreeMap;
 
 import javax.management.RuntimeErrorException;
@@ -28,7 +29,7 @@ public class Main {
 		ArrayList<Valor> sortByNumberOfTweets = task1(mapa,reader);
 		
 		//===Task 2===//
-		task2(reader2,  1, "BF", 0, sortByNumberOfTweets); // querry, method, j
+		task2(reader2,  1, "random", 0, sortByNumberOfTweets); // querry, method, j
 			
 		//===Export===//
 		//writer("sort.csv",sortByNumberOfTweets);
@@ -129,8 +130,6 @@ public class Main {
 		long totalTime = endTime - startTime;
 		System.out.println("Time elapsed: " + totalTime + "ms");
 		
-		//int D = 100*2;
-		//ArrayList<String> subSpace = subspace("frequent", D, sortByNumberOfTweets);
 	}
 
 
@@ -168,7 +167,9 @@ public class Main {
 				ret.add(sortByNumberOfTweets.get(sortByNumberOfTweets.size()-i-1).text);
 		}
 		else if(method.equals("random")){
-			ret.add("TODO");//TODO
+			for(int i=0;i<D;i++){
+				ret.add(sortByNumberOfTweets.get(randInt(0, D)).text);
+			}
 		}
 		else if(method.equals("BF")){}
 		else throw new RuntimeException();
@@ -200,4 +201,14 @@ public class Main {
 		outputWriter.flush();  
 		outputWriter.close();  
 	}
+	
+// ===== Random Number generator ===== //	
+	public static int randInt(int min, int max) {
+		Random rand = new Random();
+		int randomNum = rand.nextInt((max - min) + 1) + min;
+		return randomNum;
+	}
 }
+
+
+
