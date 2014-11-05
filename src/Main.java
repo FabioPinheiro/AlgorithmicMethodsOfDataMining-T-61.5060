@@ -29,7 +29,7 @@ public class Main {
 		ArrayList<Valor> sortByNumberOfTweets = task1(mapa,reader);
 		
 		//===Task 2===//
-		task2(reader2,  1, "random", 0, sortByNumberOfTweets); // querry, method, j
+		task2(reader2,  1, "BF", 0, sortByNumberOfTweets); // querry, method, j
 			
 		//===Export===//
 		//writer("sort.csv",sortByNumberOfTweets);
@@ -112,7 +112,7 @@ public class Main {
 		
 		ArrayList<String> Sub = subspace(method, j, sortByNumberOfTweets);
 		
-		for(int line = 0; line<5000; line++){
+		for(int line = 0; line<20000; line++){
 			stringLine = reader.readLine();
 			String[]  tokensY = stringLine.split("\\s+");
 			
@@ -208,7 +208,6 @@ public class Main {
 		int randomNum = rand.nextInt((max - min) + 1) + min;
 		return randomNum;
 	}
+	
+
 }
-
-
-
