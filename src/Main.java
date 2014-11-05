@@ -29,7 +29,10 @@ public class Main {
 		
 		//===Task 2===//
 		task2(reader2,  sortByNumberOfTweets, 500);
-				 
+			
+		//===Export===//
+		writer("sort",sortByNumberOfTweets);
+			
 		//for (int i =0; i< subSpace.size();i++)
 		//	System.out.println(subSpace.get(i));
 		//for (int i =0; i< sortByNumberOfTweets.size();i++)
@@ -89,6 +92,8 @@ public class Main {
 		
 		if(Q>1000 || Q<1) throw new RuntimeException();
 		
+		System.out.println("     === BRUTE FORCE ===     ");
+		
 		double angle = Math.PI/2;
 		int index = -1;
 		String stringLine = null;
@@ -110,7 +115,6 @@ public class Main {
 				twt = stringLine;	
 			}
 		}
-		
 		System.out.println("Nearest: " + twt );
 		System.out.println("Index of Nearest=" + index + "    Angle=" + angle);
 		
@@ -152,7 +156,7 @@ public class Main {
 		return ret;
 	}
 
-// ===== Class Angle ===== //
+// ===== Class Valor ===== //
 	public static class Valor {
 		final String text;
 		int numberOfTweets;
@@ -162,5 +166,19 @@ public class Main {
 			this.numberOfTweets = 0;
 			this.aux = -1;
 		}
+		public String toString(){
+			return this.text;
+		}
+	}
+	
+// ===== Export Data ===== //
+	public static void writer (String filename, ArrayList<Valor> x) throws IOException{
+		BufferedWriter outputWriter = new BufferedWriter(new FileWriter(filename));
+		for (int i = 0; i < x.size(); i++) {
+			outputWriter.write(x.get(i).toString());
+			outputWriter.newLine();
+		}
+		outputWriter.flush();  
+		outputWriter.close();  
 	}
 }
