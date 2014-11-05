@@ -11,7 +11,7 @@ import java.util.TreeMap;
 import javax.management.RuntimeErrorException;
 
 ///// ===== Algorithmic Methods of Data Mining ===== /////
-///// ===== FINAL PROJECT ===== /////
+///// =============== FINAL PROJECT ================ /////
 
 public class Main {
 
@@ -28,10 +28,10 @@ public class Main {
 		ArrayList<Valor> sortByNumberOfTweets = task1(mapa,reader);
 		
 		//===Task 2===//
-		task2(reader2,  sortByNumberOfTweets, 500);
+		task2(reader2,  1, "BF", 0, sortByNumberOfTweets); // querry, method, j
 			
 		//===Export===//
-		writer("sort",sortByNumberOfTweets);
+		//writer("sort.csv",sortByNumberOfTweets);
 			
 		//for (int i =0; i< subSpace.size();i++)
 		//	System.out.println(subSpace.get(i));
@@ -87,12 +87,16 @@ public class Main {
 	}
 
 /// ===== TASK 2 ===== ///	
-	public static void task2(LineNumberReader reader, ArrayList<Valor> sortByNumberOfTweets, int Q) throws IOException{
+	public static void task2(LineNumberReader reader, int Q, String method, int j, ArrayList<Valor> sortByNumberOfTweets) throws IOException{
 		long startTime = System.currentTimeMillis();
 		
 		if(Q>1000 || Q<1) throw new RuntimeException();
 		
-		System.out.println("     === BRUTE FORCE ===     ");
+		if(method.equals("BF")) System.out.println("     === BRUTE FORCE ===     ");
+		else if (method.equals("frequent")) System.out.println("     === D-FREQUENT ===     ");
+		else if (method.equals("infrequent")) System.out.println("     === D-INFREQUENT ===     ");
+		else if (method.equals("random")) System.out.println("     === D-RANDOM ===     ");
+		else throw new RuntimeException();
 		
 		double angle = Math.PI/2;
 		int index = -1;
@@ -103,12 +107,15 @@ public class Main {
 		String[] tokensX = stringLine.split("\\s+");
 		System.out.println("Querry: " + stringLine);
 		
-		for(int j=Q; j<1000;j++) reader.readLine();
+		for(int k=Q; k<1000;k++) reader.readLine();
+		
+		ArrayList<String> Sub = subspace(method, j, sortByNumberOfTweets);
 		
 		for(int line = 0; line<5000; line++){
 			stringLine = reader.readLine();
 			String[]  tokensY = stringLine.split("\\s+");
-			double aux = angle(tokensX, tokensY);
+			
+			double aux = angle(tokensX, tokensY, method, Sub);
 			if(aux<angle){
 				angle = aux;
 				index = reader.getLineNumber();
@@ -128,30 +135,42 @@ public class Main {
 
 
 // ===== Angle ===== //
-	public static double angle(String[] x, String[] y){
+	public static double angle(String[] x, String[] y, String method, ArrayList<String> subspace){
 		int cont = 0;
 		for(int i = 0; i< x.length; i++)
 			for(int j = 0; j< y.length; j++)
-				if(x[i].equals(y[j]))
-					//if(subspace.contains(x[i])) //have to be in the subspace
-					cont++;
+				if(method.equals("BF")){
+					if(x[i].equals(y[j])){
+						cont++;
+					}
+				}
+				else if(method.equals("frequent") || method.equals("infrequent") || method.equals("random")){
+					if(x[i].equals(y[j]) && subspace.contains(y[j])){
+						cont++;
+					}
+				}
+				else{
+					throw new RuntimeException();
+				}
 		return Math.acos(cont/(Math.sqrt(x.length)*Math.sqrt(y.length)));
 	}
 
 // ===== Generate Subspaces ===== //
-	public static ArrayList<String> subspace(String f, int d, ArrayList<Valor> sortByNumberOfTweets){
+	public static ArrayList<String> subspace(String method, int j, ArrayList<Valor> sortByNumberOfTweets){
 		ArrayList<String> ret = new ArrayList<String>();
-		if(f.equals("frequent")){
-			for(int i=0; i<d; i++)
+		int D = 100*2^j;
+		if(method.equals("frequent")){
+			for(int i=0; i<D; i++)
 				ret.add(sortByNumberOfTweets.get(i).text);
 		}
-		else if(f.equals("infrequent")){
-			for(int i =0; i<d; i++)
+		else if(method.equals("infrequent")){
+			for(int i =0; i<D; i++)
 				ret.add(sortByNumberOfTweets.get(sortByNumberOfTweets.size()-i-1).text);
 		}
-		else if(f.equals("random")){
+		else if(method.equals("random")){
 			ret.add("TODO");//TODO
 		}
+		else if(method.equals("BF")){}
 		else throw new RuntimeException();
 		return ret;
 	}
