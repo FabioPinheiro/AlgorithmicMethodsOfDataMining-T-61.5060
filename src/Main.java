@@ -29,10 +29,16 @@ public class Main {
 		ArrayList<Valor> sortByNumberOfTweets = task1(mapa,reader);
 		
 		//===Task 2===//
-		task2(reader2,  1, "BF", 0, sortByNumberOfTweets); // querry, method, j
-			
+		long[] time = {0,0,0,0,0,0,0,0};
+		int s = 0;
+		int[] j = {0,2,4,6,8,10,12,14};
+		for(int a : j){
+			time[s] = task2(reader2,  1, "random", a, sortByNumberOfTweets); // querry, method, j
+			s++;
+		}
+		
 		//===Export===//
-		//writer("sort.csv",sortByNumberOfTweets);
+		writer("sortR.csv",time);
 			
 		//for (int i =0; i< subSpace.size();i++)
 		//	System.out.println(subSpace.get(i));
@@ -88,7 +94,7 @@ public class Main {
 	}
 
 /// ===== TASK 2 ===== ///	
-	public static void task2(LineNumberReader reader, int Q, String method, int j, ArrayList<Valor> sortByNumberOfTweets) throws IOException{
+	public static long task2(LineNumberReader reader, int Q, String method, int j, ArrayList<Valor> sortByNumberOfTweets) throws IOException{
 		long startTime = System.currentTimeMillis();
 		
 		if(Q>1000 || Q<1) throw new RuntimeException();
@@ -129,7 +135,7 @@ public class Main {
 		long endTime   = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
 		System.out.println("Time elapsed: " + totalTime + "ms");
-		
+		return totalTime;
 	}
 
 
@@ -191,11 +197,22 @@ public class Main {
 		}
 	}
 	
-// ===== Export Data ===== //
-	public static void writer (String filename, ArrayList<Valor> x) throws IOException{
+// ===== Export ArrayList ===== //
+	public static void writerAL (String filename, ArrayList<Valor> x) throws IOException{
 		BufferedWriter outputWriter = new BufferedWriter(new FileWriter(filename));
 		for (int i = 0; i < x.size(); i++) {
 			outputWriter.write(x.get(i).toString());
+			outputWriter.newLine();
+		}
+		outputWriter.flush();  
+		outputWriter.close();  
+	}
+	
+// ===== Export ArrayList ===== //
+	public static void writer (String filename, long[] x) throws IOException{
+		BufferedWriter outputWriter = new BufferedWriter(new FileWriter(filename));
+		for (int i = 0; i < x.length; i++) {
+			outputWriter.write(String.valueOf(x[i]));
 			outputWriter.newLine();
 		}
 		outputWriter.flush();  
