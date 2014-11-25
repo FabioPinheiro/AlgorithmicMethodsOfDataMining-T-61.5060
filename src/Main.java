@@ -1,16 +1,14 @@
 //import java.awt.List;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-//import java.util.Map;
-//import java.util.Map.Entry;
-import java.util.Random;
-//import java.util.TreeMap;
-
-
-import javax.swing.text.StyledEditorKit.BoldAction;
 
 //import javax.management.RuntimeErrorException;
 
@@ -33,24 +31,30 @@ public class Main {
 		}else {
 			makingTmp = false;
 		}
-
 		
-		
-		HashMap<String, Valor> mapa = mapcreator();
+		HashMap<String, Utils.Trem> mapa = mapcreator();
 		
 		//===Task 1===//
-		ArrayList<Valor> sortByNumberOfTweets = task1(mapa);
+		ArrayList<Utils.Trem> sortByNumberOfTweets = task1(mapa);
 		
-		writerSortByNumberOfTweets(sortByNumberOfTweets);
+		Utils.writerSortByNumberOfTweets(sortByNumberOfTweets);
 		sortByNumberOfTweets = null;
-		sortByNumberOfTweets = readSortByNumberOfTweets();
+		sortByNumberOfTweets = Utils.readSortByNumberOfTweets();
 		if(sortByNumberOfTweets ==null) System.out.println(FileTremsSortedByNumberOfTweets + " FAIL");
 		
+		dataReduction( "frequent", 2, sortByNumberOfTweets, mapa);
+		int[] j = {0,2,4,6,8,10,12,14};
+		String[] methods = {"frequent","infrequent","random"};
+		for(String method : methods){
+			 System.out.println(">>> " + method);
+			for(int d : j){
+				//task2Pre( method, d, sortByNumberOfTweets, mapa);
+			}
+		}
+		/*
 		//===Task 2===//
-		task2Pre( "frequent", 2, sortByNumberOfTweets, mapa);
 		long[] time = {0,0,0,0,0,0,0,0};
 		int s = 0;
-		int[] j = {0,2,4,6,8,10,12,14};
 		for(int a : j){
 			time[s] = task2(100, "BF", a, sortByNumberOfTweets); // querry, method, j
 			s++;
@@ -77,20 +81,20 @@ public class Main {
 		}
 		
 		//===Export===//
-		writer("BF.csv",time);
-		writer("BF2.csv",time2);
-		writer("BF3.csv",time3);	
+		Utils.writer("BF.csv",time);
+		Utils.writer("BF2.csv",time2);
+		Utils.writer("BF3.csv",time3);	*/
 	}
 
-	public static HashMap<String, Valor> mapcreator() throws IOException{
+	public static HashMap<String, Utils.Trem> mapcreator() throws IOException{
 		final FileReader dataFile = new FileReader(FileAllData);
 		final LineNumberReader reader = new LineNumberReader(dataFile);
 		
-		HashMap<String, Valor> mapa = new HashMap<String, Valor>();
+		HashMap<String, Utils.Trem> mapa = new HashMap<String, Utils.Trem>();
 		for(int i = 0;i<1000;i++){
 			String[] token = reader.readLine().split("\\s+");
 			for(int j=0;j<token.length;j++){
-				mapa.put(token[j], new Valor(new String(token[j])));
+				mapa.put(token[j], new Utils.Trem(new String(token[j])));
 			}
 		}
 		reader.close();
@@ -98,7 +102,7 @@ public class Main {
 	}
 	
 /// ===== TASK 1 ===== ///	
-	public static ArrayList<Valor> task1(HashMap mapa) throws IOException{
+	public static ArrayList<Utils.Trem> task1(HashMap mapa) throws IOException{
 		final FileReader dataFile = new FileReader(FileAllData);
 		final LineNumberReader reader = new LineNumberReader(dataFile);
 		
@@ -106,7 +110,7 @@ public class Main {
 		String[] token = stringLine.split("\\s+");
 		for(int line = 0;  (stringLine = reader.readLine()) != null && line<1000; line++){
 			for(int j=0;j<token.length;j++){
-				Valor obj = (Valor) mapa.get(token[j]);
+				Utils.Trem obj = (Utils.Trem) mapa.get(token[j]);
 				if(obj != null){
 					obj.numberOfTweets++;
 				}
@@ -114,12 +118,12 @@ public class Main {
 			token = stringLine.split("\\s+");
 		}
 
-		ArrayList<Valor> sortByNumberOfTweets = new ArrayList<Valor>();
+		ArrayList<Utils.Trem> sortByNumberOfTweets = new ArrayList<Utils.Trem>();
 		sortByNumberOfTweets.addAll(mapa.values());
 
-		Collections.sort(sortByNumberOfTweets, new Comparator<Valor>() {
+		Collections.sort(sortByNumberOfTweets, new Comparator<Utils.Trem>() {
 			@Override
-			public int compare(Valor o1, Valor o2){
+			public int compare(Utils.Trem o1, Utils.Trem o2){
 				if (o1.numberOfTweets < o2.numberOfTweets)
 					return 1;
 				else if(o1.numberOfTweets == o2.numberOfTweets)
@@ -133,26 +137,26 @@ public class Main {
 	}
 	
 	/// ===== PRE ===== ///
-	public static ArrayList<Main.Tweet> task2Pre( String method, int d, ArrayList<Valor> sortByNumberOfTweets,HashMap<String, Valor> mapa) throws IOException{
+	public static ArrayList<Utils.Tweet> dataReduction( String method, int d, ArrayList<Utils.Trem> sortByNumberOfTweets,HashMap<String, Utils.Trem> mapa) throws IOException{
 		final FileReader dataFile = new FileReader(FileAllData);
 		@SuppressWarnings("resource")
 		final LineNumberReader reader = new LineNumberReader(dataFile);
 
-		ArrayList<Main.Tweet> tweets = new ArrayList<Main.Tweet>();
+		ArrayList<Utils.Tweet> tweets = new ArrayList<Utils.Tweet>();
 		String stringLine;
-		HashMap<String, Valor>  subspaceHashMap = subspace(method, d, sortByNumberOfTweets);
-		BufferedWriter outputWriter = new BufferedWriter(new FileWriter(FilesPath +"dataReduction" + "_Method-" + method +  "_D-"+d +  ".csv"));
+		HashMap<String, Utils.Trem>  subspaceHashMap = subspace(method, d, sortByNumberOfTweets);
+		BufferedWriter outputWriter = Utils.getBufferWriter(method, d);
 		
 		//LINHAS
 		for(int line = 0;  line<5000 && (stringLine = reader.readLine()) != null; line++){
-			if(line%1000==0)System.out.println("task2Pre(): line:" + line);
+			if(line%1000==0)System.out.println("dataReduction(): line:" + line);
 			String[]  tokens = stringLine.split("\\s+");
 			
 			//ArrayList<Valor> listOfTrems = new ArrayList<Valor>();
 			String listOfTremsSTRING = new String();
 			for(int ii=0;ii<tokens.length;ii++){
 				
-				Valor obj = (Valor) subspaceHashMap.get(tokens[ii]);
+				Utils.Trem obj = (Utils.Trem) subspaceHashMap.get(tokens[ii]);
 				if(obj != null){
 					//listOfTrems.add(obj);
 					listOfTremsSTRING += ", " + obj.text; 
@@ -167,7 +171,7 @@ public class Main {
 		return tweets;
 	}
 /// ===== TASK 2 ===== ///	
-	public static long task2(int Q, String method, int j, ArrayList<Valor> sortByNumberOfTweets) throws IOException{
+	public static long task2(int Q, String method, int j, ArrayList<Utils.Trem> sortByNumberOfTweets) throws IOException{
 		final FileReader dataFile = new FileReader(FileAllData);
 		final LineNumberReader reader = new LineNumberReader(dataFile);
 		
@@ -192,7 +196,7 @@ public class Main {
 		
 		for(int k=Q; k<1000;k++) reader.readLine();
 		
-		HashMap<String, Valor> Sub = subspace(method, j, sortByNumberOfTweets);
+		HashMap<String, Utils.Trem> Sub = subspace(method, j, sortByNumberOfTweets);
 		
 		for(int line = 0; line<80000; line++){
 			stringLine = reader.readLine();
@@ -216,7 +220,7 @@ public class Main {
 	}
 
 /// ===== TASK 3 ===== ///
-	public static long task3(int Q, String method, int j, ArrayList<Valor> sortByNumberOfTweets) throws IOException{
+	public static long task3(int Q, String method, int j, ArrayList<Utils.Trem> sortByNumberOfTweets) throws IOException{
 		final FileReader dataFile = new FileReader(FileAllData);
 		final LineNumberReader reader = new LineNumberReader(dataFile);
 		
@@ -241,7 +245,7 @@ public class Main {
 		
 		for(int k=Q; k<1000;k++) reader.readLine();
 		
-		HashMap<String, Valor>Sub = subspace(method, j, sortByNumberOfTweets);
+		HashMap<String, Utils.Trem>Sub = subspace(method, j, sortByNumberOfTweets);
 		
 		for(int line = 0; line<80000; line++){
 			stringLine = reader.readLine();
@@ -265,7 +269,7 @@ public class Main {
 	}
 	
 /// ===== TASK 4 ===== ///
-	public static long task4(int Q, String method, int j, ArrayList<Valor> sortByNumberOfTweets) throws IOException{
+	public static long task4(int Q, String method, int j, ArrayList<Utils.Trem> sortByNumberOfTweets) throws IOException{
 		final FileReader dataFile = new FileReader(FileAllData);
 		final LineNumberReader reader = new LineNumberReader(dataFile);
 		
@@ -290,7 +294,7 @@ public class Main {
 		
 		for(int k=Q; k<1000;k++) reader.readLine();
 		
-		HashMap<String, Valor> Sub = subspace(method, j, sortByNumberOfTweets);
+		HashMap<String, Utils.Trem> Sub = subspace(method, j, sortByNumberOfTweets);
 		
 		for(int line = 0; line<80000; line++){
 			stringLine = reader.readLine();
@@ -316,7 +320,7 @@ public class Main {
 	
 	
 // ===== Angle ===== //
-	public static double angle(String[] x, String[] y, String method, HashMap<String, Valor> subspace){
+	public static double angle(String[] x, String[] y, String method, HashMap<String, Utils.Trem> subspace){
 		int cont = 0;
 		for(int i = 0; i< x.length; i++)
 			for(int j = 0; j< y.length; j++)
@@ -337,7 +341,7 @@ public class Main {
 	}
 
 // ===== Angle Alphabet ===== //
-	public static double angle_alphabet(String[] x, String[] y, String method, HashMap<String, Valor> subspace){
+	public static double angle_alphabet(String[] x, String[] y, String method, HashMap<String, Utils.Trem> subspace){
 		int cont = 0;
 		int i=0;
 		int j=0;
@@ -372,8 +376,8 @@ public class Main {
 	}
 	
 // ===== Generate Subspaces ===== //
-	public static HashMap<String, Valor> subspace(String method, int d, ArrayList<Valor> sortByNumberOfTweets){
-		HashMap<String, Valor> ret = new HashMap<String, Valor>();
+	public static HashMap<String, Utils.Trem> subspace(String method, int d, ArrayList<Utils.Trem> sortByNumberOfTweets){
+		HashMap<String, Utils.Trem> ret = new HashMap<String, Utils.Trem>();
 		int D = 100*2^d;
 		if(method.equals("frequent")){
 			for(int i=0; i<D; i++)
@@ -385,7 +389,7 @@ public class Main {
 		}
 		else if(method.equals("random")){
 			ArrayList<Integer> randIntList = new ArrayList<Integer>();
-			for(int rand=randInt(0, sortByNumberOfTweets.size()); randIntList.size()<D; rand=randInt(0, sortByNumberOfTweets.size())){
+			for(int rand=Utils.randInt(0, sortByNumberOfTweets.size()); randIntList.size()<D; rand=Utils.randInt(0, sortByNumberOfTweets.size())){
 				if(!randIntList.contains(rand));
 					randIntList.add(rand);
 			}
@@ -397,34 +401,9 @@ public class Main {
 		else throw new RuntimeException();
 		return ret;
 	}
-
-// ===== Class Valor ===== //
-	public static class Valor implements Serializable{
-		final String text;
-		int numberOfTweets;
-		public Valor(String text) {
-			this.text = text;
-			this.numberOfTweets = 0;
-		}
-		public String toString(){
-			return this.text;
-		}
-	}
-// ===== Class Tweet ===== //
-	public static class Tweet {
-		ArrayList<Valor> listOfTrems;
-		int numberOfTrems;
-		public Tweet(int numberOfTrems, ArrayList<Main.Valor> listOfTrems) {
-			this.listOfTrems = listOfTrems;
-			this.numberOfTrems = numberOfTrems;
-		}
-		public String toString(){
-			return " numberOfTrems: " + numberOfTrems + " trems: " + this.listOfTrems.toString() + "<<<";
-		}
-	}
 	
 // ===== Export ArrayList ===== //
-	public static void writerAL (String filename, ArrayList<Valor> x) throws IOException{
+	public static void writerAL (String filename, ArrayList<Utils.Trem> x) throws IOException{
 		BufferedWriter outputWriter = new BufferedWriter(new FileWriter(FilesPath+filename));
 		for (int i = 0; i < x.size(); i++) {
 			outputWriter.write(x.get(i).toString());
@@ -432,51 +411,6 @@ public class Main {
 		}
 		outputWriter.flush();  
 		outputWriter.close();  
-	}
-	
-// ===== Export ArrayList ===== //
-	public static void writer (String filename, long[] x) throws IOException{
-		BufferedWriter outputWriter = new BufferedWriter(new FileWriter(FilesPath+filename));
-		for (int i = 0; i < x.length; i++) {
-			outputWriter.write(String.valueOf(x[i]));
-			outputWriter.newLine();
-		}
-		outputWriter.flush();
-		outputWriter.close();
-	}
-// ===== Serialize SortByNumberOfTweets ===== //
-	public static void writerSortByNumberOfTweets(ArrayList<Valor> sortByNumberOfTweets) throws IOException{
-		//serialize the List
-		OutputStream file = new FileOutputStream(FileTremsSortedByNumberOfTweets);
-		OutputStream buffer = new BufferedOutputStream(file);
-		ObjectOutput output = new ObjectOutputStream(buffer);
-		
-		output.writeObject(sortByNumberOfTweets);
-		output.flush();
-		output.close();
-	}
-// ===== Deserialize SortByNumberOfTweets ===== //
-	public static ArrayList<Valor> readSortByNumberOfTweets() throws IOException{
-		
-		//deserialize the quarks.ser file
-		InputStream file = new FileInputStream(FileTremsSortedByNumberOfTweets);
-		InputStream buffer = new BufferedInputStream(file);
-		ObjectInput input = new ObjectInputStream (buffer);
-		//deserialize the List
-		ArrayList<Valor> recoveredSortByNumberOfTweets = null;
-		try {
-			recoveredSortByNumberOfTweets = (ArrayList<Valor>)input.readObject();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return recoveredSortByNumberOfTweets;
-	}
-// ===== Random Number generator ===== //	
-	public static int randInt(int min, int max) {
-		Random rand = new Random();
-		int randomNum = rand.nextInt((max - min) + 1) + min;
-		return randomNum;
 	}
 	
 
