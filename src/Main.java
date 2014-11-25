@@ -9,14 +9,32 @@ import java.util.HashMap;
 import java.util.Random;
 //import java.util.TreeMap;
 
+
+import javax.swing.text.StyledEditorKit.BoldAction;
+
 //import javax.management.RuntimeErrorException;
 
 ///// ===== Algorithmic Methods of Data Mining ===== /////
 ///// =============== FINAL PROJECT ================ /////
 
 public class Main {
-
+	public static final String FilesPath = "tmp/";
+	public static final String FileAllData = "tweets_15m.txt";
+	public static final String FileTremsSortedByNumberOfTweets = FilesPath+"TremsSortedByNumberOfTweets";
+	
+	public static Boolean makingTmp;
 	public static void main(String[] args) throws IOException {
+		
+		File theDir = new File(FilesPath);
+		// if the directory does not exist, create it
+		if (!theDir.exists()) {
+			theDir.mkdir();
+			makingTmp = true;
+		}else {
+			makingTmp = false;
+		}
+
+		
 		
 		HashMap<String, Valor> mapa = mapcreator();
 		
@@ -26,7 +44,8 @@ public class Main {
 		writerSortByNumberOfTweets(sortByNumberOfTweets);
 		sortByNumberOfTweets = null;
 		sortByNumberOfTweets = readSortByNumberOfTweets();
-		if(sortByNumberOfTweets ==null) System.out.println("iajdoasdo");
+		if(sortByNumberOfTweets ==null) System.out.println(FileTremsSortedByNumberOfTweets + " FAIL");
+		
 		//===Task 2===//
 		task2Pre( "frequent", 2, sortByNumberOfTweets, mapa);
 		long[] time = {0,0,0,0,0,0,0,0};
@@ -64,7 +83,7 @@ public class Main {
 	}
 
 	public static HashMap<String, Valor> mapcreator() throws IOException{
-		final FileReader dataFile = new FileReader("tweets_15m.txt");
+		final FileReader dataFile = new FileReader(FileAllData);
 		final LineNumberReader reader = new LineNumberReader(dataFile);
 		
 		HashMap<String, Valor> mapa = new HashMap<String, Valor>();
@@ -80,7 +99,7 @@ public class Main {
 	
 /// ===== TASK 1 ===== ///	
 	public static ArrayList<Valor> task1(HashMap mapa) throws IOException{
-		final FileReader dataFile = new FileReader("tweets_15m.txt");
+		final FileReader dataFile = new FileReader(FileAllData);
 		final LineNumberReader reader = new LineNumberReader(dataFile);
 		
 		String stringLine = reader.readLine();
@@ -115,14 +134,14 @@ public class Main {
 	
 	/// ===== PRE ===== ///
 	public static ArrayList<Main.Tweet> task2Pre( String method, int d, ArrayList<Valor> sortByNumberOfTweets,HashMap<String, Valor> mapa) throws IOException{
-		final FileReader dataFile = new FileReader("tweets_15m.txt");
+		final FileReader dataFile = new FileReader(FileAllData);
 		@SuppressWarnings("resource")
 		final LineNumberReader reader = new LineNumberReader(dataFile);
 
 		ArrayList<Main.Tweet> tweets = new ArrayList<Main.Tweet>();
 		String stringLine;
 		HashMap<String, Valor>  subspaceHashMap = subspace(method, d, sortByNumberOfTweets);
-		BufferedWriter outputWriter = new BufferedWriter(new FileWriter("task2Pre.csv"));
+		BufferedWriter outputWriter = new BufferedWriter(new FileWriter(FilesPath +"dataReduction" + "_Method-" + method +  "_D-"+d +  ".csv"));
 		
 		//LINHAS
 		for(int line = 0;  line<5000 && (stringLine = reader.readLine()) != null; line++){
@@ -149,7 +168,7 @@ public class Main {
 	}
 /// ===== TASK 2 ===== ///	
 	public static long task2(int Q, String method, int j, ArrayList<Valor> sortByNumberOfTweets) throws IOException{
-		final FileReader dataFile = new FileReader("tweets_15m.txt");
+		final FileReader dataFile = new FileReader(FileAllData);
 		final LineNumberReader reader = new LineNumberReader(dataFile);
 		
 		long startTime = System.currentTimeMillis();
@@ -198,7 +217,7 @@ public class Main {
 
 /// ===== TASK 3 ===== ///
 	public static long task3(int Q, String method, int j, ArrayList<Valor> sortByNumberOfTweets) throws IOException{
-		final FileReader dataFile = new FileReader("tweets_15m.txt");
+		final FileReader dataFile = new FileReader(FileAllData);
 		final LineNumberReader reader = new LineNumberReader(dataFile);
 		
 		long startTime = System.currentTimeMillis();
@@ -247,7 +266,7 @@ public class Main {
 	
 /// ===== TASK 4 ===== ///
 	public static long task4(int Q, String method, int j, ArrayList<Valor> sortByNumberOfTweets) throws IOException{
-		final FileReader dataFile = new FileReader("tweets_15m.txt");
+		final FileReader dataFile = new FileReader(FileAllData);
 		final LineNumberReader reader = new LineNumberReader(dataFile);
 		
 		long startTime = System.currentTimeMillis();
@@ -406,7 +425,7 @@ public class Main {
 	
 // ===== Export ArrayList ===== //
 	public static void writerAL (String filename, ArrayList<Valor> x) throws IOException{
-		BufferedWriter outputWriter = new BufferedWriter(new FileWriter(filename));
+		BufferedWriter outputWriter = new BufferedWriter(new FileWriter(FilesPath+filename));
 		for (int i = 0; i < x.size(); i++) {
 			outputWriter.write(x.get(i).toString());
 			outputWriter.newLine();
@@ -417,7 +436,7 @@ public class Main {
 	
 // ===== Export ArrayList ===== //
 	public static void writer (String filename, long[] x) throws IOException{
-		BufferedWriter outputWriter = new BufferedWriter(new FileWriter(filename));
+		BufferedWriter outputWriter = new BufferedWriter(new FileWriter(FilesPath+filename));
 		for (int i = 0; i < x.length; i++) {
 			outputWriter.write(String.valueOf(x[i]));
 			outputWriter.newLine();
@@ -428,7 +447,7 @@ public class Main {
 // ===== Serialize SortByNumberOfTweets ===== //
 	public static void writerSortByNumberOfTweets(ArrayList<Valor> sortByNumberOfTweets) throws IOException{
 		//serialize the List
-		OutputStream file = new FileOutputStream("sortByNumberOfTweets.ser");
+		OutputStream file = new FileOutputStream(FileTremsSortedByNumberOfTweets);
 		OutputStream buffer = new BufferedOutputStream(file);
 		ObjectOutput output = new ObjectOutputStream(buffer);
 		
@@ -440,7 +459,7 @@ public class Main {
 	public static ArrayList<Valor> readSortByNumberOfTweets() throws IOException{
 		
 		//deserialize the quarks.ser file
-		InputStream file = new FileInputStream("sortByNumberOfTweets.ser");
+		InputStream file = new FileInputStream(FileTremsSortedByNumberOfTweets);
 		InputStream buffer = new BufferedInputStream(file);
 		ObjectInput input = new ObjectInputStream (buffer);
 		//deserialize the List
