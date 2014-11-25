@@ -1,15 +1,15 @@
-import java.awt.List;
+//import java.awt.List;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+//import java.util.Map;
+//import java.util.Map.Entry;
 import java.util.Random;
-import java.util.TreeMap;
+//import java.util.TreeMap;
 
-import javax.management.RuntimeErrorException;
+//import javax.management.RuntimeErrorException;
 
 ///// ===== Algorithmic Methods of Data Mining ===== /////
 ///// =============== FINAL PROJECT ================ /////
@@ -17,38 +17,51 @@ import javax.management.RuntimeErrorException;
 public class Main {
 
 	public static void main(String[] args) throws IOException {
-		final FileReader dataFile = new FileReader("tweets_15m.txt");
-		final FileReader dataFile2 = new FileReader("tweets_15m.txt");
-
-		final LineNumberReader reader = new LineNumberReader(dataFile);
-		final LineNumberReader reader2 = new LineNumberReader(dataFile2);
 		
-		HashMap<String, Valor> mapa = mapcreator(reader);
+		HashMap<String, Valor> mapa = mapcreator();
 		
 		//===Task 1===//
-		ArrayList<Valor> sortByNumberOfTweets = task1(mapa,reader);
+		ArrayList<Valor> sortByNumberOfTweets = task1(mapa);
 		
 		//===Task 2===//
 		long[] time = {0,0,0,0,0,0,0,0};
 		int s = 0;
 		int[] j = {0,2,4,6,8,10,12,14};
 		for(int a : j){
-			time[s] = task2(reader2,  1, "random", a, sortByNumberOfTweets); // querry, method, j
+			time[s] = task2(100, "BF", a, sortByNumberOfTweets); // querry, method, j
+			s++;
+		}
+		
+		System.out.println("-----------TASK 3-----------------");
+		
+		//===Task 3==//
+		long[] time2 = {0,0,0,0,0,0,0,0};
+		s = 0;
+		for(int a : j){
+			time2[s] = task3(100, "BF", a, sortByNumberOfTweets); // querry, method, j
+			s++;
+		}
+		
+		System.out.println("-----------TASK 4-----------------");
+		
+		//===Task 4==//
+		long[] time3 = {0,0,0,0,0,0,0,0};
+		s = 0;
+		for(int a : j){
+			time3[s] = task4(100, "BF", a, sortByNumberOfTweets); // querry, method, j
 			s++;
 		}
 		
 		//===Export===//
-		writer("sortR.csv",time);
-			
-		//for (int i =0; i< subSpace.size();i++)
-		//	System.out.println(subSpace.get(i));
-		//for (int i =0; i< sortByNumberOfTweets.size();i++)
-		//	System.out.println(sortByNumberOfTweets.get(i).text + "   numberOfTweets=" + sortByNumberOfTweets.get(i).numberOfTweets);
-		//for (Entry<String, Valor> entry : mapa.entrySet())
-		//	System.out.println(entry.getKey() + "/   \t numberOfTweets=" + entry.getValue().numberOfTweets + "\t  aux=" + entry.getValue().aux);
+		writer("BF.csv",time);
+		writer("BF2.csv",time2);
+		writer("BF3.csv",time3);	
 	}
 
-	public static HashMap<String, Valor> mapcreator(BufferedReader reader) throws IOException{
+	public static HashMap<String, Valor> mapcreator() throws IOException{
+		final FileReader dataFile = new FileReader("tweets_15m.txt");
+		final LineNumberReader reader = new LineNumberReader(dataFile);
+		
 		HashMap<String, Valor> mapa = new HashMap<String, Valor>();
 		for(int i = 0;i<1000;i++){
 			String[] token = reader.readLine().split("\\s+");
@@ -56,11 +69,15 @@ public class Main {
 				mapa.put(token[j], new Valor(new String(token[j])));
 			}
 		}
+		reader.close();
 		return mapa;
 	}
 	
 /// ===== TASK 1 ===== ///	
-	public static ArrayList<Valor> task1(HashMap mapa, BufferedReader reader) throws IOException{
+	public static ArrayList<Valor> task1(HashMap mapa) throws IOException{
+		final FileReader dataFile = new FileReader("tweets_15m.txt");
+		final LineNumberReader reader = new LineNumberReader(dataFile);
+		
 		String stringLine = reader.readLine();
 		String[] token = stringLine.split("\\s+");
 		for(int line = 0;  (stringLine = reader.readLine()) != null && line<1000; line++){
@@ -90,11 +107,15 @@ public class Main {
 					return -1;
 			}
 		});
+		reader.close();
 		return sortByNumberOfTweets;
 	}
 
 /// ===== TASK 2 ===== ///	
-	public static long task2(LineNumberReader reader, int Q, String method, int j, ArrayList<Valor> sortByNumberOfTweets) throws IOException{
+	public static long task2(int Q, String method, int j, ArrayList<Valor> sortByNumberOfTweets) throws IOException{
+		final FileReader dataFile = new FileReader("tweets_15m.txt");
+		final LineNumberReader reader = new LineNumberReader(dataFile);
+		
 		long startTime = System.currentTimeMillis();
 		
 		if(Q>1000 || Q<1) throw new RuntimeException();
@@ -118,7 +139,7 @@ public class Main {
 		
 		ArrayList<String> Sub = subspace(method, j, sortByNumberOfTweets);
 		
-		for(int line = 0; line<20000; line++){
+		for(int line = 0; line<80000; line++){
 			stringLine = reader.readLine();
 			String[]  tokensY = stringLine.split("\\s+");
 			
@@ -135,10 +156,110 @@ public class Main {
 		long endTime   = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
 		System.out.println("Time elapsed: " + totalTime + "ms");
+		reader.close();
 		return totalTime;
 	}
 
-
+/// ===== TASK 3 ===== ///
+	public static long task3(int Q, String method, int j, ArrayList<Valor> sortByNumberOfTweets) throws IOException{
+		final FileReader dataFile = new FileReader("tweets_15m.txt");
+		final LineNumberReader reader = new LineNumberReader(dataFile);
+		
+		long startTime = System.currentTimeMillis();
+		
+		if(Q>1000 || Q<1) throw new RuntimeException();
+		
+		if(method.equals("BF")) System.out.println("     === BRUTE FORCE ===     ");
+		else if (method.equals("frequent")) System.out.println("     === D-FREQUENT ===     ");
+		else if (method.equals("infrequent")) System.out.println("     === D-INFREQUENT ===     ");
+		else if (method.equals("random")) System.out.println("     === D-RANDOM ===     ");
+		else throw new RuntimeException();
+		
+		double angle = Math.PI/2;
+		int index = -1;
+		String stringLine = null;
+		String twt = null;
+		
+		for(int i=1;i<=Q;i++) stringLine = reader.readLine();
+		String[] tokensX = stringLine.split("\\s+");
+		System.out.println("Querry: " + stringLine);
+		
+		for(int k=Q; k<1000;k++) reader.readLine();
+		
+		ArrayList<String> Sub = subspace(method, j, sortByNumberOfTweets);
+		
+		for(int line = 0; line<80000; line++){
+			stringLine = reader.readLine();
+			String[]  tokensY = stringLine.split("\\s+");
+			
+			double aux = angle_alphabet(tokensX, tokensY, method, Sub);
+			if(aux<angle){
+				angle = aux;
+				index = reader.getLineNumber();
+				twt = stringLine;	
+			}
+		}
+		System.out.println("Nearest: " + twt );
+		System.out.println("Index of Nearest=" + index + "    Angle=" + angle);
+		
+		long endTime   = System.currentTimeMillis();
+		long totalTime = endTime - startTime;
+		System.out.println("Time elapsed: " + totalTime + "ms");
+		reader.close();
+		return totalTime;
+	}
+	
+/// ===== TASK 4 ===== ///
+	public static long task4(int Q, String method, int j, ArrayList<Valor> sortByNumberOfTweets) throws IOException{
+		final FileReader dataFile = new FileReader("tweets_15m.txt");
+		final LineNumberReader reader = new LineNumberReader(dataFile);
+		
+		long startTime = System.currentTimeMillis();
+		
+		if(Q>1000 || Q<1) throw new RuntimeException();
+		
+		if(method.equals("BF")) System.out.println("     === BRUTE FORCE ===     ");
+		else if (method.equals("frequent")) System.out.println("     === D-FREQUENT ===     ");
+		else if (method.equals("infrequent")) System.out.println("     === D-INFREQUENT ===     ");
+		else if (method.equals("random")) System.out.println("     === D-RANDOM ===     ");
+		else throw new RuntimeException();
+		
+		double angle = Math.PI/2;
+		int index = -1;
+		String stringLine = null;
+		String twt = null;
+		
+		for(int i=1;i<=Q;i++) stringLine = reader.readLine();
+		String[] tokensX = stringLine.split("\\s+");
+		System.out.println("Querry: " + stringLine);
+		
+		for(int k=Q; k<1000;k++) reader.readLine();
+		
+		ArrayList<String> Sub = subspace(method, j, sortByNumberOfTweets);
+		
+		for(int line = 0; line<80000; line++){
+			stringLine = reader.readLine();
+			String[]  tokensY = stringLine.split("\\s+");
+			
+			double aux = angle_alphabet(tokensX, tokensY, method, Sub);
+			if(aux<=angle*1.5){
+				angle = aux;
+				index = reader.getLineNumber();
+				twt = stringLine;	
+			}
+		}
+		System.out.println("Nearest: " + twt );
+		System.out.println("Index of Nearest=" + index + "    Angle=" + angle);
+		
+		long endTime   = System.currentTimeMillis();
+		long totalTime = endTime - startTime;
+		System.out.println("Time elapsed: " + totalTime + "ms");
+		reader.close();
+		return totalTime;
+	}
+	
+	
+	
 // ===== Angle ===== //
 	public static double angle(String[] x, String[] y, String method, ArrayList<String> subspace){
 		int cont = 0;
@@ -160,6 +281,41 @@ public class Main {
 		return Math.acos(cont/(Math.sqrt(x.length)*Math.sqrt(y.length)));
 	}
 
+// ===== Angle Alphabet ===== //
+	public static double angle_alphabet(String[] x, String[] y, String method, ArrayList<String> subspace){
+		int cont = 0;
+		int i=0;
+		int j=0;
+		while(i<x.length && j<y.length){
+			if(method.equals("BF")){
+				if(x[i].equals(y[j])){
+					cont++;
+					i++;
+					j++;
+				}
+				else{
+					if(x[i].compareTo(y[j])<0) i++;  
+					else j++;
+				}
+			}
+			else if(method.equals("frequent") || method.equals("infrequent") || method.equals("random")){
+				if(x[i].equals(y[j]) && subspace.contains(y[j])){
+					cont++;
+					i++;
+					j++;
+				}
+				else{
+					if(x[i].compareTo(y[j])<0) i++;  
+					else j++;
+				}
+			}
+			else{
+				throw new RuntimeException();
+			}
+		}
+		return Math.acos(cont/(Math.sqrt(x.length)*Math.sqrt(y.length)));
+	}
+	
 // ===== Generate Subspaces ===== //
 	public static ArrayList<String> subspace(String method, int j, ArrayList<Valor> sortByNumberOfTweets){
 		ArrayList<String> ret = new ArrayList<String>();
