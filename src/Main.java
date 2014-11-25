@@ -28,18 +28,23 @@ public class Main {
 		//===Task 1===//
 		ArrayList<Valor> sortByNumberOfTweets = task1(mapa,reader);
 		
+		writerSortByNumberOfTweets(sortByNumberOfTweets);
+		sortByNumberOfTweets = null;
+		sortByNumberOfTweets = readSortByNumberOfTweets();
+		if(sortByNumberOfTweets ==null) System.out.println("iajdoasdo");
 		//===Task 2===//
-		long[] time = {0,0,0,0,0,0,0,0};
+		task2Pre( "frequent", 2, sortByNumberOfTweets, mapa);
+		/*long[] time = {0,0,0,0,0,0,0,0};
 		int s = 0;
 		int[] j = {0,2,4,6,8,10,12,14};
-		for(int a : j){
-			time[s] = task2(reader2,  1, "random", a, sortByNumberOfTweets); // querry, method, j
+		for(int d : j){
+			time[s] = task2(reader2,  1, "frequent", d, sortByNumberOfTweets); // querry, method, j
 			s++;
 		}
 		
 		//===Export===//
 		writer("sortR.csv",time);
-			
+		*/
 		//for (int i =0; i< subSpace.size();i++)
 		//	System.out.println(subSpace.get(i));
 		//for (int i =0; i< sortByNumberOfTweets.size();i++)
@@ -67,10 +72,7 @@ public class Main {
 			for(int j=0;j<token.length;j++){
 				Valor obj = (Valor) mapa.get(token[j]);
 				if(obj != null){
-					if(obj.aux != line){
-						obj.aux=line;
-						obj.numberOfTweets++;
-					}
+					obj.numberOfTweets++;
 				}
 			}
 			token = stringLine.split("\\s+");
@@ -92,7 +94,41 @@ public class Main {
 		});
 		return sortByNumberOfTweets;
 	}
+	
+	/// ===== PRE ===== ///
+	public static ArrayList<Main.Tweet> task2Pre( String method, int d, ArrayList<Valor> sortByNumberOfTweets,HashMap<String, Valor> mapa) throws IOException{
+		final FileReader dataFile = new FileReader("tweets_15m.txt");
+		@SuppressWarnings("resource")
+		final LineNumberReader reader = new LineNumberReader(dataFile);
 
+		ArrayList<Main.Tweet> tweets = new ArrayList<Main.Tweet>();
+		String stringLine;
+		HashMap<String, Valor>  subspaceHashMap = subspace(method, d, sortByNumberOfTweets);
+		BufferedWriter outputWriter = new BufferedWriter(new FileWriter("task2Pre.csv"));
+		
+		//LINHAS
+		for(int line = 0;  line<5000 && (stringLine = reader.readLine()) != null; line++){
+			if(line%1000==0)System.out.println("task2Pre(): line:" + line);
+			String[]  tokens = stringLine.split("\\s+");
+			
+			//ArrayList<Valor> listOfTrems = new ArrayList<Valor>();
+			String listOfTremsSTRING = new String();
+			for(int ii=0;ii<tokens.length;ii++){
+				
+				Valor obj = (Valor) subspaceHashMap.get(tokens[ii]);
+				if(obj != null){
+					//listOfTrems.add(obj);
+					listOfTremsSTRING += ", " + obj.text; 
+				}
+			}
+			outputWriter.write(tokens.length + listOfTremsSTRING);
+			outputWriter.newLine();
+			//tweets.add(new Tweet(tokens.length, listOfTrems));
+		}
+		outputWriter.flush();
+		outputWriter.close();
+		return tweets;
+	}
 /// ===== TASK 2 ===== ///	
 	public static long task2(LineNumberReader reader, int Q, String method, int j, ArrayList<Valor> sortByNumberOfTweets) throws IOException{
 		long startTime = System.currentTimeMillis();
@@ -116,12 +152,12 @@ public class Main {
 		
 		for(int k=Q; k<1000;k++) reader.readLine();
 		
-		ArrayList<String> Sub = subspace(method, j, sortByNumberOfTweets);
+		HashMap<String, Valor> Sub = subspace(method, j, sortByNumberOfTweets);
 		
 		for(int line = 0; line<20000; line++){
 			stringLine = reader.readLine();
 			String[]  tokensY = stringLine.split("\\s+");
-			
+			if(line == 1243)System.out.println(">>>>>" +  stringLine); 
 			double aux = angle(tokensX, tokensY, method, Sub);
 			if(aux<angle){
 				angle = aux;
@@ -140,7 +176,7 @@ public class Main {
 
 
 // ===== Angle ===== //
-	public static double angle(String[] x, String[] y, String method, ArrayList<String> subspace){
+	public static double angle(String[] x, String[] y, String method, HashMap<String, Valor> subspace){
 		int cont = 0;
 		for(int i = 0; i< x.length; i++)
 			for(int j = 0; j< y.length; j++)
@@ -150,7 +186,7 @@ public class Main {
 					}
 				}
 				else if(method.equals("frequent") || method.equals("infrequent") || method.equals("random")){
-					if(x[i].equals(y[j]) && subspace.contains(y[j])){
+					if(x[i].equals(y[j]) && subspace.containsKey(y[j])){
 						cont++;
 					}
 				}
@@ -161,20 +197,25 @@ public class Main {
 	}
 
 // ===== Generate Subspaces ===== //
-	public static ArrayList<String> subspace(String method, int j, ArrayList<Valor> sortByNumberOfTweets){
-		ArrayList<String> ret = new ArrayList<String>();
-		int D = 100*2^j;
+	public static HashMap<String, Valor> subspace(String method, int d, ArrayList<Valor> sortByNumberOfTweets){
+		HashMap<String, Valor> ret = new HashMap<String, Valor>();
+		int D = 100*2^d;
 		if(method.equals("frequent")){
 			for(int i=0; i<D; i++)
-				ret.add(sortByNumberOfTweets.get(i).text);
+				ret.put(sortByNumberOfTweets.get(i).text,sortByNumberOfTweets.get(i));
 		}
 		else if(method.equals("infrequent")){
 			for(int i =0; i<D; i++)
-				ret.add(sortByNumberOfTweets.get(sortByNumberOfTweets.size()-i-1).text);
+				ret.put(sortByNumberOfTweets.get(sortByNumberOfTweets.size()-i-1).text,sortByNumberOfTweets.get(sortByNumberOfTweets.size()-i-1));
 		}
 		else if(method.equals("random")){
+			ArrayList<Integer> randIntList = new ArrayList<Integer>();
+			for(int rand=randInt(0, sortByNumberOfTweets.size()); randIntList.size()<D; rand=randInt(0, sortByNumberOfTweets.size())){
+				if(!randIntList.contains(rand));
+					randIntList.add(rand);
+			}
 			for(int i=0;i<D;i++){
-				ret.add(sortByNumberOfTweets.get(randInt(0, D)).text);
+				ret.put(sortByNumberOfTweets.get(randIntList.get(i)).text,sortByNumberOfTweets.get(randIntList.get(i)));
 			}
 		}
 		else if(method.equals("BF")){}
@@ -183,17 +224,27 @@ public class Main {
 	}
 
 // ===== Class Valor ===== //
-	public static class Valor {
+	public static class Valor implements Serializable{
 		final String text;
 		int numberOfTweets;
-		int aux;
 		public Valor(String text) {
 			this.text = text;
 			this.numberOfTweets = 0;
-			this.aux = -1;
 		}
 		public String toString(){
 			return this.text;
+		}
+	}
+// ===== Class Tweet ===== //
+	public static class Tweet {
+		ArrayList<Valor> listOfTrems;
+		int numberOfTrems;
+		public Tweet(int numberOfTrems, ArrayList<Main.Valor> listOfTrems) {
+			this.listOfTrems = listOfTrems;
+			this.numberOfTrems = numberOfTrems;
+		}
+		public String toString(){
+			return " numberOfTrems: " + numberOfTrems + " trems: " + this.listOfTrems.toString() + "<<<";
 		}
 	}
 	
@@ -215,10 +266,37 @@ public class Main {
 			outputWriter.write(String.valueOf(x[i]));
 			outputWriter.newLine();
 		}
-		outputWriter.flush();  
-		outputWriter.close();  
+		outputWriter.flush();
+		outputWriter.close();
 	}
-	
+// ===== Serialize SortByNumberOfTweets ===== //
+	public static void writerSortByNumberOfTweets(ArrayList<Valor> sortByNumberOfTweets) throws IOException{
+		//serialize the List
+		OutputStream file = new FileOutputStream("sortByNumberOfTweets.ser");
+		OutputStream buffer = new BufferedOutputStream(file);
+		ObjectOutput output = new ObjectOutputStream(buffer);
+		
+		output.writeObject(sortByNumberOfTweets);
+		output.flush();
+		output.close();
+	}
+// ===== Deserialize SortByNumberOfTweets ===== //
+	public static ArrayList<Valor> readSortByNumberOfTweets() throws IOException{
+		
+		//deserialize the quarks.ser file
+		InputStream file = new FileInputStream("sortByNumberOfTweets.ser");
+		InputStream buffer = new BufferedInputStream(file);
+		ObjectInput input = new ObjectInputStream (buffer);
+		//deserialize the List
+		ArrayList<Valor> recoveredSortByNumberOfTweets = null;
+		try {
+			recoveredSortByNumberOfTweets = (ArrayList<Valor>)input.readObject();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return recoveredSortByNumberOfTweets;
+	}
 // ===== Random Number generator ===== //	
 	public static int randInt(int min, int max) {
 		Random rand = new Random();
