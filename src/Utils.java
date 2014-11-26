@@ -34,9 +34,11 @@ public class Utils {
 	}
 	// ===== Class Tweet ===== //
 	public static class Tweet {
-		ArrayList<Trem> listOfTrems;
+		ArrayList<String> listOfTrems;
 		int numberOfTrems;
-		public Tweet(int numberOfTrems, ArrayList<Utils.Trem> listOfTrems) {
+		int index;
+		public Tweet(int index, int numberOfTrems, ArrayList<String> listOfTrems) {
+			this.index = index;
 			this.listOfTrems = listOfTrems;
 			this.numberOfTrems = numberOfTrems;
 		}
@@ -44,12 +46,33 @@ public class Utils {
 			return " numberOfTrems: " + numberOfTrems + " trems: " + this.listOfTrems.toString() + "<<<";
 		}
 	}
+	public static class Data {
+		BufferedReader buffer;
+		public Data(String method, int d) throws IOException {
+			buffer = getBufferReader(method, d);
+		}
+		public Tweet getNextTweet() throws IOException{
+			ArrayList<String> listOfTrems = new ArrayList<String>();
+			String stringLine = buffer.readLine();
+			if(stringLine == null){
+				buffer.close();
+				return null;
+			}
+			String[]  tokens = stringLine.split("\\s+");
+			int index = Integer.parseInt(tokens[0]);
+			int numberOfTrems = Integer.parseInt(tokens[1]);
+			for(int ii=2;ii<tokens.length;ii++){
+				listOfTrems.add(tokens[ii]);
+			}
+			return new Tweet(index, numberOfTrems, listOfTrems);
+		}
+	}
 	// ===== FILES NAMES ===== //
 	public static BufferedWriter getBufferWriter(String method, int d) throws IOException{
-		return new BufferedWriter(new FileWriter(Main.FilesPath +"dataReduction" + "_Method-" + method +  "_D-"+d +  ".csv"));
+		return new BufferedWriter(new FileWriter(Main.FilesPath +"dataReduction" + "_Method:" + method +  "_D:"+d ));
 	}
 	public static BufferedReader getBufferReader(String method, int d) throws IOException{
-		return new BufferedReader(new FileReader(Main.FilesPath +"dataReduction" + "_Method-" + method +  "_D-"+d +  ".csv"));
+		return new BufferedReader(new FileReader(Main.FilesPath +"dataReduction" + "_Method:" + method +  "_D:"+d ));
 	}
 	// ===== Export ArrayList ===== //
 	public static void writer (String filename, long[] x) throws IOException{
@@ -62,7 +85,7 @@ public class Utils {
 		outputWriter.close();
 	}
 	// ===== Serialize SortByNumberOfTweets ===== //
-	public static void writerSortByNumberOfTweets(ArrayList<Utils.Trem> sortByNumberOfTweets) throws IOException{
+	public static void writerSortByNumberOfTweets(ArrayList<String> sortByNumberOfTweets) throws IOException{
 		//serialize the List
 		OutputStream file = new FileOutputStream(Main.FileTremsSortedByNumberOfTweets);
 		OutputStream buffer = new BufferedOutputStream(file);
@@ -73,16 +96,16 @@ public class Utils {
 		output.close();
 	}
 	// ===== Deserialize SortByNumberOfTweets ===== //
-	public static ArrayList<Utils.Trem> readSortByNumberOfTweets() throws IOException{
+	public static ArrayList<String> readSortByNumberOfTweets() throws IOException{
 		
 		//deserialize the quarks.ser file
 		InputStream file = new FileInputStream(Main.FileTremsSortedByNumberOfTweets);
 		InputStream buffer = new BufferedInputStream(file);
 		ObjectInput input = new ObjectInputStream (buffer);
 		//deserialize the List
-		ArrayList<Utils.Trem> recoveredSortByNumberOfTweets = null;
+		ArrayList<String> recoveredSortByNumberOfTweets = null;
 		try {
-			recoveredSortByNumberOfTweets = (ArrayList<Utils.Trem>)input.readObject();
+			recoveredSortByNumberOfTweets = (ArrayList<String>)input.readObject();
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
