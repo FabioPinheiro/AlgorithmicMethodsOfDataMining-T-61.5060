@@ -22,18 +22,18 @@ public class Main {
 	public static final Integer QuerrySize  = 1000;
 	public static final String FilesPath = "tmp/";
 	public static final String FileAllData = "tweets_15m.txt";
+	public static final String FileState = "State";
 	public static final String FileTremsSortedByNumberOfTweets = FilesPath+"TremsSortedByNumberOfTweets";
 	
-	public static Boolean makingTmp;
 	public static void main(String[] args) throws IOException {
 		
 		File theDir = new File(FilesPath);
 		// if the directory does not exist, create it
 		if (!theDir.exists()) {
 			theDir.mkdir();
-			makingTmp = true;
+			Utils.State.save();
 		}else {
-			makingTmp = false;
+			Utils.State.load();
 		}
 		
 		HashMap<String, Utils.Trem> mapa = mapcreator();
@@ -45,64 +45,56 @@ public class Main {
 		sortByNumberOfTweets = null;
 		sortByNumberOfTweets = Utils.readSortByNumberOfTweets();
 		if(sortByNumberOfTweets ==null) System.out.println(FileTremsSortedByNumberOfTweets + " FAIL");
-		
-		dataReduction( "frequent", 2, sortByNumberOfTweets, mapa);//FIXME
-		
-		String[] methods = {"frequent","infrequent"};//FIXME ,"random"};
-		int[] j = {0,2,4,6,8,10,12,14};
-		
-		if(makingTmp){
-			
-			for(String method : methods){
-				 System.out.println(">>> " + method);
-				for(int d : j){
-					if(method.equals("BF")) System.out.println("     === BRUTE FORCE ===     ");
-					else if (method.equals("frequent")) System.out.println("     === D-FREQUENT ===     ");
-					else if (method.equals("infrequent")) System.out.println("     === D-INFREQUENT ===     ");
-					else if (method.equals("random")) System.out.println("     === D-RANDOM ===     ");
-					else throw new RuntimeException();
-					dataReduction( method, d, sortByNumberOfTweets, mapa);
+
+		for(String method : Utils.Methods){
+			 System.out.println(">>> " + method);
+			for(int j : Utils.J){
+				if(method.equals("BF")) System.out.println("     === BRUTE FORCE ===     ");
+				else if (method.equals(Utils.Methods[0])) System.out.println("     === D-FREQUENT ===     ");
+				else if (method.equals(Utils.Methods[1])) System.out.println("     === D-INFREQUENT ===     ");
+				else if (method.equals(Utils.Methods[2])) System.out.println("     === D-RANDOM ===     ");
+				else throw new RuntimeException();
+				if(! Utils.State.isfileCreated(method, j)){
+					dataReduction( method, j, sortByNumberOfTweets, mapa);
+					Utils.State.fileCreated(method, j);
 				}
 			}
 		}
 		
-		//===Task 2===//
-		long[][] time = new long [3][8];
-		int iM = 0;
-		int iJ = 0;
-		for(String m : methods){
-			iJ=0;
-			for(int a : j){
-				System.out.println( iM+"  "+iJ);
-				time[iM][iJ++] = task2(methods[iM], a); // querry, method, j
+		System.out.println("-----------TASK 2-----------------");
+		for(String method : Utils.Methods){
+			for(int d : Utils.J){
+				if(! Utils.State.isTimeSet(2, method, d)){
+					long time = task2(method, d);
+					Utils.State.setTime(2, method, d, time);;
+				}
+				
 			}
-			iM++;
 		}
-		/*
+		
 		System.out.println("-----------TASK 3-----------------");
 		
-		//===Task 3==//
-		long[] time2 = {0,0,0,0,0,0,0,0};
-		s = 0;
-		for(int a : j){
-			time2[s] = task3(100, "BF", a, sortByNumberOfTweets); // querry, method, j
-			s++;
+		for(String method : Utils.Methods){
+			for(int d : Utils.J){
+				if(! Utils.State.isTimeSet(3, method, d)){
+					long time = task3(method, d);
+					Utils.State.setTime(3, method, d, time);;
+				}
+				
+			}
 		}
 		
 		System.out.println("-----------TASK 4-----------------");
 		
-		//===Task 4==//
-		long[] time3 = {0,0,0,0,0,0,0,0};
-		s = 0;
-		for(int a : j){
-			time3[s] = task4(100, "BF", a, sortByNumberOfTweets); // querry, method, j
-			s++;
+		for(String method : Utils.Methods){
+			for(int d : Utils.J){
+				if(! Utils.State.isTimeSet(4, method, d)){
+					long time = task4(method, d);
+					Utils.State.setTime(4, method, d, time);;
+				}
+				
+			}
 		}
-		
-		//===Export===//
-		Utils.writer("BF.csv",time);
-		Utils.writer("BF2.csv",time2);
-		Utils.writer("BF3.csv",time3);	*/
 	}
 
 	public static HashMap<String, Utils.Trem> mapcreator() throws IOException{
@@ -160,10 +152,8 @@ public class Main {
 	}
 	
 	/// ===== PRE ===== ///
-	public static ArrayList<Utils.Tweet> dataReduction( String method, int d, ArrayList<String> sortByNumberOfTweets,HashMap<String, Utils.Trem> mapa) throws IOException{
+	public static void dataReduction( String method, int d, ArrayList<String> sortByNumberOfTweets,HashMap<String, Utils.Trem> mapa) throws IOException{
 		final BufferedReader reader = new BufferedReader(new FileReader(Main.FileAllData));
-
-		ArrayList<Utils.Tweet> tweets = new ArrayList<Utils.Tweet>();
 		String stringLine;
 		HashMap<String, String>  subspaceHashMap = subspace(method, d, sortByNumberOfTweets);
 		BufferedWriter outputWriter = Utils.getBufferWriter(method, d);
@@ -189,11 +179,9 @@ public class Main {
 		}
 		outputWriter.flush();
 		outputWriter.close();
-		return tweets;
 	}
 /// ===== TASK 2 ===== ///	
 	public static long task2(String method, int d) throws IOException{
-
 		double angle = Math.PI/2;
 		Utils.Data data = new Utils.Data(method, d);
 		ArrayList<Utils.Tweet> querrys = new ArrayList<Utils.Tweet>();
@@ -222,8 +210,68 @@ public class Main {
 		return totalTime;
 	}
 	
-	/*
+	
 	/// ===== TASK 3 ===== ///
+	public static long task3(String method, int d) throws IOException{
+		double angle = Math.PI/2;
+		Utils.Data data = new Utils.Data(method, d);
+		ArrayList<Utils.Tweet> querrys = new ArrayList<Utils.Tweet>();
+		Utils.Tweet angleMinX = null;
+		Utils.Tweet angleMinY = null;
+		
+		for(int k=0; k<QuerrySize;k++) 
+			querrys.add(data.getNextTweet());
+		
+		long startTime = System.currentTimeMillis();
+		for(Utils.Tweet querryY = data.getNextTweet(); querryY != null; querryY = data.getNextTweet()){
+			for(Utils.Tweet querryX : querrys){
+				double aux = angleTweetAlphabet(querryX, querryY);
+				if(aux<angle){
+					angle = aux;
+					angleMinX = querryX;
+					angleMinY = querryY;
+				}
+			}
+		}
+		long endTime   = System.currentTimeMillis();
+		long totalTime = endTime - startTime;
+		System.out.println("NearestX: index: " + angleMinX.index +",  #Tren: " + angleMinX.numberOfTrems + ",  text: " + angleMinX.listOfTrems );
+		System.out.println("NearestY: index: " + angleMinY.index +",  #Tren: " + angleMinY.numberOfTrems + ",  text: " + angleMinY.listOfTrems );
+		System.out.println("Anglet:" + angle +"   Time elapsed: " + totalTime + "ms");
+		return totalTime;
+	}
+	
+	
+	public static long task4(String method, int d) throws IOException{
+		double angle = Math.PI/2;
+		Utils.Data data = new Utils.Data(method, d);
+		ArrayList<Utils.Tweet> querrys = new ArrayList<Utils.Tweet>();
+		Utils.Tweet angleMinX = null;
+		Utils.Tweet angleMinY = null;
+		
+		for(int k=0; k<QuerrySize;k++) 
+			querrys.add(data.getNextTweet());
+		
+		long startTime = System.currentTimeMillis();
+		for(Utils.Tweet querryY = data.getNextTweet(); querryY != null; querryY = data.getNextTweet()){
+			for(Utils.Tweet querryX : querrys){
+				double aux = angleTweetAlphabet(querryX, querryY);
+				if(aux<angle){
+					angle = aux;
+					angleMinX = querryX;
+					angleMinY = querryY;
+				}
+			}
+		}
+		long endTime   = System.currentTimeMillis();
+		long totalTime = endTime - startTime;
+		System.out.println("NearestX: index: " + angleMinX.index +",  #Tren: " + angleMinX.numberOfTrems + ",  text: " + angleMinX.listOfTrems );
+		System.out.println("NearestY: index: " + angleMinY.index +",  #Tren: " + angleMinY.numberOfTrems + ",  text: " + angleMinY.listOfTrems );
+		System.out.println("Anglet:" + angle +"   Time elapsed: " + totalTime + "ms");
+		return totalTime;
+	}
+	
+	/*
 	public static long task3(int Q, String method, int j, ArrayList<Utils.Trem> sortByNumberOfTweets) throws IOException{
 		final FileReader dataFile = new FileReader(FileAllData);
 		final LineNumberReader reader = new LineNumberReader(dataFile);
@@ -270,8 +318,8 @@ public class Main {
 		System.out.println("Time elapsed: " + totalTime + "ms");
 		reader.close();
 		return totalTime;
-	}
-	
+	}*/
+	/*
 /// ===== TASK 4 ===== ///
 	public static long task4(int Q, String method, int j, ArrayList<Utils.Trem> sortByNumberOfTweets) throws IOException{
 		final FileReader dataFile = new FileReader(FileAllData);
@@ -353,38 +401,22 @@ public class Main {
 	}
 
 // ===== Angle Alphabet ===== //
-	public static double angle_alphabet(String[] x, String[] y, String method, HashMap<String, Utils.Trem> subspace){
+	public static double angleTweetAlphabet(Utils.Tweet x, Utils.Tweet y){
 		int cont = 0;
 		int i=0;
 		int j=0;
-		while(i<x.length && j<y.length){
-			if(method.equals("BF")){
-				if(x[i].equals(y[j])){
-					cont++;
-					i++;
-					j++;
-				}
-				else{
-					if(x[i].compareTo(y[j])<0) i++;  
-					else j++;
-				}
-			}
-			else if(method.equals("frequent") || method.equals("infrequent") || method.equals("random")){
-				if(x[i].equals(y[j]) && subspace.containsKey(y[j])){
-					cont++;
-					i++;
-					j++;
-				}
-				else{
-					if(x[i].compareTo(y[j])<0) i++;  
-					else j++;
-				}
+		while(i<x.listOfTrems.size() && j<y.listOfTrems.size()){
+			if(x.listOfTrems.get(i).equals(y.listOfTrems.get(j))){
+				cont++;
+				i++;
+				j++;
 			}
 			else{
-				throw new RuntimeException();
+				if(x.listOfTrems.get(i).compareTo(y.listOfTrems.get(j))<0) i++;  
+				else j++;
 			}
 		}
-		return Math.acos(cont/(Math.sqrt(x.length)*Math.sqrt(y.length)));
+		return Math.acos(cont/(Math.sqrt(x.numberOfTrems)*Math.sqrt(y.numberOfTrems)));
 	}
 	
 	// ===== Generate Subspaces ===== //

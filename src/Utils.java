@@ -46,6 +46,106 @@ public class Utils {
 			return " numberOfTrems: " + numberOfTrems + " trems: " + this.listOfTrems.toString() + "<<<";
 		}
 	}
+	// ===== Enum Method ===== //
+	//public enum Method { frequent , infrequent , random};
+	public static final String[] Methods = {"frequent","infrequent","random"};
+	public static final int[] J = {0,2,4,6,8,10,12,14};
+	// ===== Class State ===== //
+	public static class State implements Serializable{
+		private static boolean[][] makeFiles = new boolean[3][9];
+		private static long[][][] timeTasks = new long [3][3][9];
+		private static int tasksToInt(int t){
+			return t-2;
+		}
+		private static int methodsToInt(String method){
+			for (int i=0;i<=Methods.length;i++)
+				if(Methods[i].equals(method))
+					return i;
+			throw new RuntimeException();
+		}
+		private static int jToInt(int j){
+			for (int i=0;i<=J.length;i++)
+				if(J[i]==j)
+					return i;
+			throw new RuntimeException();
+		}
+		public static void fileCreated(String method, int j) throws IOException{
+			makeFiles[methodsToInt(method)][jToInt(j)]=true;
+			save();
+		}
+		public static void setTime(int tasks, String method, int j,long time) throws IOException{
+			timeTasks[tasksToInt(tasks)][methodsToInt(method)][jToInt(j)]=time;
+			save();
+		}
+		public static boolean isfileCreated(String method, int j){
+			return makeFiles[methodsToInt(method)][jToInt(j)];
+		}
+		public static Boolean isTimeSet(int tasks, String method, int j){
+			System.out.println(" === The task:" + tasks +
+					" using method " + method +
+					" with j=" + j + "   ->  " +
+					(timeTasks[tasksToInt(tasks)][methodsToInt(method)][jToInt(j)]==0 ? " TODO " : " DONE ")
+						+ " === ");
+			return timeTasks[tasksToInt(tasks)][methodsToInt(method)][jToInt(j)]!=0;
+		}
+		public static void save() throws IOException{
+			System.out.println("State:saving");
+			BufferedWriter outputWriter = new BufferedWriter(new FileWriter(Main.FilesPath+Main.FileState));
+			for(int i = 0; i < 3; i++) {
+				String aux = new String();
+				for(int j = 0; j < 9; j++)
+					aux += makeFiles[i][j] + " ";
+				outputWriter.write(aux);
+				outputWriter.newLine();
+			}
+			outputWriter.write("TACKS");
+			outputWriter.newLine();
+			for(int k = 0; k < 3; k++) {
+				for(int i = 0; i < 3; i++){
+					String aux = new String();
+					for(int j = 0; j < 9; j++)
+						aux += timeTasks[k][i][j]  + " ";
+					outputWriter.write(aux);
+					outputWriter.newLine();
+				}
+			}
+			outputWriter.flush();
+			outputWriter.close();
+		}
+		public static void load() throws IOException{
+			System.out.println("State:loading");
+			BufferedReader bufferedReader = new BufferedReader(new FileReader(Main.FilesPath+Main.FileState));
+			
+			for(int i = 0; i < 3; i++) {
+				String stringLine = bufferedReader.readLine();
+				if(stringLine == null){
+					bufferedReader.close();
+					throw new RuntimeException();
+				}
+				String[]  tokens = stringLine.split("\\s+");
+				for(int j = 0; j < 9; j++){
+					makeFiles[i][j] = Boolean.parseBoolean(tokens[j]);
+				}
+			}
+			
+			bufferedReader.readLine(); //outputWriter.write("TACKS");
+			
+			for(int k = 0; k < 3; k++) {
+				for(int i = 0; i < 3; i++){
+					String stringLine = bufferedReader.readLine();
+					if(stringLine == null){
+						bufferedReader.close();
+						throw new RuntimeException();
+					}
+					String[]  tokens = stringLine.split("\\s+");
+					for(int j = 0; j < 9; j++)
+						timeTasks[k][i][j] = Long.parseLong(tokens[j]);
+				}
+			}
+			bufferedReader.close();
+		}
+	}
+	
 	public static class Data {
 		BufferedReader buffer;
 		public Data(String method, int d) throws IOException {
@@ -110,6 +210,7 @@ public class Utils {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		input.close();
 		return recoveredSortByNumberOfTweets;
 	}
 	// ===== Random Number generator ===== //	
