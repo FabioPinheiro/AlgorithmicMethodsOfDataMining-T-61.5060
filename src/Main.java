@@ -103,6 +103,8 @@ public class Main {
 				
 			}
 		}
+		
+		Utils.State.print();
 	}
 	
 /// ===== MAP CREATOR ===== ///

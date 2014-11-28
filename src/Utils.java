@@ -163,6 +163,41 @@ public class Utils {
 			}
 			bufferedReader.close();
 		}
+		public static void print() throws IOException{
+			System.out.println("State:printing");
+			BufferedWriter outputWriter2 = new BufferedWriter(new FileWriter(Main.FilesPath+"Task2.csv"));
+			BufferedWriter outputWriter3 = new BufferedWriter(new FileWriter(Main.FilesPath+"Task3.csv"));
+			BufferedWriter outputWriter4 = new BufferedWriter(new FileWriter(Main.FilesPath+"Task4.csv"));
+			
+			for(int i = 0; i < 3; i++){
+				String aux = new String();
+				for(int j = 0; j < 8; j++)
+					aux += timeTasks[0][i][j]  + (j!=7 ? ", " : "");
+				outputWriter2.write(aux);
+				outputWriter2.newLine();
+			}
+			for(int i = 0; i < 3; i++){
+				String aux = new String();
+				for(int j = 0; j < 8; j++)
+					aux += timeTasks[1][i][j]  + (j!=7 ? ", " : "");
+				outputWriter3.write(aux);
+				outputWriter3.newLine();
+			}
+			for(int i = 0; i < 3; i++){
+				String aux = new String();
+				for(int j = 0; j < 8; j++)
+					aux += timeTasks[2][i][j]  + (j!=7 ? ", " : "");
+				outputWriter4.write(aux);
+				outputWriter4.newLine();
+			}
+				
+			outputWriter2.flush();
+			outputWriter2.close();
+			outputWriter3.flush();
+			outputWriter3.close();
+			outputWriter4.flush();
+			outputWriter4.close();
+		}
 	}
 	
 	public static class Data {
