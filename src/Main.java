@@ -46,22 +46,29 @@ public class Main {
 //		sortByNumberOfTweets = null;
 //		sortByNumberOfTweets = Utils.readSortByNumberOfTweets();
 //		if(sortByNumberOfTweets ==null) System.out.println(FileTermsSortedByNumberOfTweets + " FAIL");
-//
-//		for(String method : Utils.Methods){ //TODO Fora do sítio...!
-//			System.out.println(">>> " + method);
-//			for(int j : Utils.J){
-//				if(method.equals("BF")) System.out.println("     === BRUTE FORCE ===     ");
-//				else if (method.equals(Utils.Methods[0])) System.out.println("     === D-FREQUENT ===     ");
-//				else if (method.equals(Utils.Methods[1])) System.out.println("     === D-INFREQUENT ===     ");
-//				else if (method.equals(Utils.Methods[2])) System.out.println("     === D-RANDOM ===     ");
-//				else throw new RuntimeException();
-//				if(! Utils.State.isfileCreated(method, j)){
-//					dataReduction( method, j, sortByNumberOfTweets, mapa);
-//					Utils.State.fileCreated(method, j);
-//				}
-//			}
-//		}
+
+		ArrayList<String> SortedTerms = new ArrayList<String>();
+		for(Utils.Term e : sortByNumberOfTweets){
+			SortedTerms.add(e.text);
+		}
 		
+		//===Data Reduction===//
+		for(String method : Utils.Methods){
+			System.out.println(">>> " + method);
+			for(int j : Utils.J){
+				if(method.equals("BF")) System.out.println("     === BRUTE FORCE ===     ");
+				else if (method.equals(Utils.Methods[0])) System.out.println("     === D-FREQUENT ===     ");
+				else if (method.equals(Utils.Methods[1])) System.out.println("     === D-INFREQUENT ===     ");
+				else if (method.equals(Utils.Methods[2])) System.out.println("     === D-RANDOM ===     ");
+				else throw new RuntimeException();
+				if(! Utils.State.isfileCreated(method, j)){
+					dataReduction( method, j, SortedTerms, mapa);
+					Utils.State.fileCreated(method, j);
+				}
+			}
+		}
+		
+		//===Task 2===//
 		System.out.println("-----------TASK 2-----------------");
 		for(String method : Utils.Methods){
 			for(int d : Utils.J){
@@ -149,13 +156,9 @@ public class Main {
 		
 		return sortByNumberOfTweets;
 		
-//		ArrayList<String> aux = new ArrayList<String>();
-//		for(Utils.Term e : sortByNumberOfTweets)
-//			aux.add(e.text);
-//		return aux;
 	}
 	
-/// ===== PRE ===== ///
+/// ===== DATA REDUCTION ===== ///
 	public static void dataReduction( String method, int d, ArrayList<String> sortByNumberOfTweets,HashMap<String, Utils.Term> mapa) throws IOException{
 		final BufferedReader reader = new BufferedReader(new FileReader(Main.FileAllData));
 		String stringLine;
