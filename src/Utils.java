@@ -45,12 +45,6 @@ public class Utils {
 			outputWriter.close();  
 		}
 	
-	
-	
-	
-	
-	
-	
 	// ===== Class Tweet ===== //
 	public static class Tweet {
 		ArrayList<String> listOfTerms;
@@ -200,6 +194,7 @@ public class Utils {
 		}
 	}
 	
+	// ===== Class Data ===== //
 	public static class Data {
 		BufferedReader buffer;
 		public Data(String method, int d) throws IOException {

@@ -74,12 +74,12 @@ public class Main {
 			for(int d : Utils.J){
 				if(! Utils.State.isTimeSet(2, method, d)){
 					long time = task2(method, d);
-					Utils.State.setTime(2, method, d, time);;
+					Utils.State.setTime(2, method, d, time);
 				}
-				
 			}
 		}
 		
+		//===Task 3===//
 		System.out.println("-----------TASK 3-----------------");
 		
 		for(String method : Utils.Methods){
@@ -164,11 +164,11 @@ public class Main {
 	public static void dataReduction( String method, int d, ArrayList<String> sortByNumberOfTweets,HashMap<String, Utils.Term> mapa) throws IOException{
 		final BufferedReader reader = new BufferedReader(new FileReader(Main.FileAllData));
 		String stringLine;
-		HashMap<String, String>  subspaceHashMap = subspace(method, d, sortByNumberOfTweets);
+		ArrayList<String>  subspaceHashMap = subspace(method, d, sortByNumberOfTweets);
 		BufferedWriter outputWriter = Utils.getBufferWriter(method, d);
 		
 		//LINHAS
-		for(int line = 0;  (line<5000 || UseAllData) && (stringLine = reader.readLine()) != null; line++){
+		for(int line = 0;  (line<50000 || UseAllData) && (stringLine = reader.readLine()) != null; line++){
 			if(line%QuerrySize==0)System.out.println("dataReduction(): line:" + line);
 			String[]  tokens = stringLine.split("\\s+");
 			
@@ -176,10 +176,10 @@ public class Main {
 			String listOfTermsSTRING = new String();
 			for(int ii=0;ii<tokens.length;ii++){
 				
-				String obj = (String) subspaceHashMap.get(tokens[ii]);
-				if(obj != null){
+				
+				if(subspaceHashMap.contains(tokens[ii])){
 					//listOfTerms.add(obj);
-					listOfTermsSTRING += " " + obj;
+					listOfTermsSTRING += " " + tokens[ii];
 				}
 			}
 			outputWriter.write( line + " " + tokens.length + listOfTermsSTRING);
@@ -195,28 +195,31 @@ public class Main {
 		double angle = Math.PI/2;
 		Utils.Data data = new Utils.Data(method, d);
 		ArrayList<Utils.Tweet> querrys = new ArrayList<Utils.Tweet>();
-		Utils.Tweet angleMinX = null;
-		Utils.Tweet angleMinY = null;
+		Utils.Tweet tweetMinX = null;
+		Utils.Tweet tweetMinY = null;
 		
-		for(int k=0; k<QuerrySize;k++) 
+		for(int k=0; k<QuerrySize;k++){
 			querrys.add(data.getNextTweet());
+		}
 		
 		long startTime = System.currentTimeMillis();
-		for(Utils.Tweet querryY = data.getNextTweet(); querryY != null; querryY = data.getNextTweet()){
+		
+		for(Utils.Tweet twt = data.getNextTweet(); twt != null; twt = data.getNextTweet()){
 			for(Utils.Tweet querryX : querrys){
-				double aux = angleTweetAlphabet(querryX, querryY);
+				double aux = angleTweetAlphabet(querryX, twt);
 				if(aux<angle){
 					angle = aux;
-					angleMinX = querryX;
-					angleMinY = querryY;
+					tweetMinX = querryX;
+					tweetMinY = twt;
 				}
 			}
 		}
 		long endTime   = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
-		System.out.println("NearestX: index: " + angleMinX.index +",  #Tren: " + angleMinX.numberOfTerms + ",  text: " + angleMinX.listOfTerms );
-		System.out.println("NearestY: index: " + angleMinY.index +",  #Tren: " + angleMinY.numberOfTerms + ",  text: " + angleMinY.listOfTerms );
-		System.out.println("Anglet:" + angle +"   Time elapsed: " + totalTime + "ms");
+		
+		System.out.println("Querry: index: " + tweetMinX.index +",  #Term: " + tweetMinX.numberOfTerms + ",  Terms: " + tweetMinX.listOfTerms );
+		System.out.println("NearestY: index: " + tweetMinY.index +",  #Tren: " + tweetMinY.numberOfTerms + ",  text: " + tweetMinY.listOfTerms );
+		System.out.println("Angle:" + angle +"   Time elapsed: " + totalTime + "ms");
 		return totalTime;
 	}
 	
@@ -225,31 +228,31 @@ public class Main {
 		double angle = Math.PI/2;
 		Utils.Data data = new Utils.Data(method, d);
 		ArrayList<Utils.Tweet> querrys = new ArrayList<Utils.Tweet>();
-		Utils.Tweet angleMinX = null;
-		Utils.Tweet angleMinY = null;
+		Utils.Tweet tweetMinX = null;
+		Utils.Tweet tweetMinY = null;
 		
-		for(int k=0; k<QuerrySize;k++) 
+		for(int k=0; k<QuerrySize;k++){
 			querrys.add(data.getNextTweet());
+		}
 		
 		long startTime = System.currentTimeMillis();
-		for(Utils.Tweet querryY = data.getNextOptimisticTweet(angle); querryY != null; querryY = data.getNextTweet()){
+		
+		for(Utils.Tweet twt = data.getNextOptimisticTweet(angle); twt != null; twt = data.getNextTweet()){
 			for(Utils.Tweet querryX : querrys){
-				double aux = angleTweetAlphabet(querryX, querryY);
+				double aux = angleTweetAlphabet(querryX, twt);
 				if(aux<angle){
 					angle = aux;
-					angleMinX = querryX;
-					angleMinY = querryY;
+					tweetMinX = querryX;
+					tweetMinY = twt;
 				}
 			}
 		}
 		long endTime   = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
 		
-		System.out.println(angleMinX.index );
-		
-		System.out.println("NearestX: index: " + angleMinX.index +",  #Tren: " + angleMinX.numberOfTerms + ",  text: " + angleMinX.listOfTerms );
-		System.out.println("NearestY: index: " + angleMinY.index +",  #Tren: " + angleMinY.numberOfTerms + ",  text: " + angleMinY.listOfTerms );
-		System.out.println("Anglet:" + angle +"   Time elapsed: " + totalTime + "ms");
+		System.out.println("Querry: index: " + tweetMinX.index +",  #Term: " + tweetMinX.numberOfTerms + ",  Terms: " + tweetMinX.listOfTerms );
+		System.out.println("NearestY: index: " + tweetMinY.index +",  #Tren: " + tweetMinY.numberOfTerms + ",  text: " + tweetMinY.listOfTerms );
+		System.out.println("Angle:" + angle +"   Time elapsed: " + totalTime + "ms");
 		return totalTime;
 	}
 	
@@ -258,28 +261,31 @@ public class Main {
 		double angle = Math.PI/2;
 		Utils.Data data = new Utils.Data(method, d);
 		ArrayList<Utils.Tweet> querrys = new ArrayList<Utils.Tweet>();
-		Utils.Tweet angleMinX = null;
-		Utils.Tweet angleMinY = null;
+		Utils.Tweet tweetMinX = null;
+		Utils.Tweet tweetMinY = null;
 		
-		for(int k=0; k<QuerrySize;k++) 
+		for(int k=0; k<QuerrySize;k++){
 			querrys.add(data.getNextTweet());
+		}
 		
 		long startTime = System.currentTimeMillis();
-		for(Utils.Tweet querryY = data.getNextOptimisticTweet(angle+Math.PI); querryY != null; querryY = data.getNextTweet()){
+		
+		for(Utils.Tweet twt = data.getNextOptimisticTweet(angle - Math.PI/4); twt != null; twt = data.getNextTweet()){
 			for(Utils.Tweet querryX : querrys){
-				double aux = angleTweetAlphabet(querryX, querryY);
+				double aux = angleTweetAlphabet(querryX, twt);
 				if(aux<angle){
 					angle = aux;
-					angleMinX = querryX;
-					angleMinY = querryY;
+					tweetMinX = querryX;
+					tweetMinY = twt;
 				}
 			}
 		}
 		long endTime   = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
-		System.out.println("NearestX: index: " + angleMinX.index +",  #Tren: " + angleMinX.numberOfTerms + ",  text: " + angleMinX.listOfTerms );
-		System.out.println("NearestY: index: " + angleMinY.index +",  #Tren: " + angleMinY.numberOfTerms + ",  text: " + angleMinY.listOfTerms );
-		System.out.println("Anglet:" + angle +"   Time elapsed: " + totalTime + "ms");
+		
+		System.out.println("Querry: index: " + tweetMinX.index +",  #Term: " + tweetMinX.numberOfTerms + ",  Terms: " + tweetMinX.listOfTerms );
+		System.out.println("NearestY: index: " + tweetMinY.index +",  #Tren: " + tweetMinY.numberOfTerms + ",  text: " + tweetMinY.listOfTerms );
+		System.out.println("Angle:" + angle +"   Time elapsed: " + totalTime + "ms");
 		return totalTime;
 	}
 	
@@ -424,8 +430,12 @@ public class Main {
 				j++;
 			}
 			else{
-				if(x.listOfTerms.get(i).compareTo(y.listOfTerms.get(j))<0) i++;  
-				else j++;
+				if(x.listOfTerms.get(i).compareTo(y.listOfTerms.get(j))<0){
+					i++;  
+				}
+				else{
+					j++;
+				}
 			}
 		}
 		return Math.acos(cont/(Math.sqrt(x.numberOfTerms)*Math.sqrt(y.numberOfTerms)));
@@ -437,44 +447,44 @@ public class Main {
 	}
 	
 	// ===== Generate Subspaces ===== //
-	public static HashMap<String, String> subspace(String method, int d, ArrayList<String> sortByNumberOfTweets){
-		HashMap<String, String> ret = new HashMap<String, String>();
+	public static ArrayList<String> subspace(String method, int d, ArrayList<String> sort){
+		ArrayList<String> ret = new ArrayList<String>();
 		int D = 100*2^d;
 		if(method.equals("frequent")){
 			for(int i=0; i<D; i++)
-				ret.put(sortByNumberOfTweets.get(i),sortByNumberOfTweets.get(i));
+				ret.add(sort.get(i));
 		}
 		else if(method.equals("infrequent")){
 			for(int i =0; i<D; i++)
-				ret.put(sortByNumberOfTweets.get(sortByNumberOfTweets.size()-i-1),sortByNumberOfTweets.get(sortByNumberOfTweets.size()-i-1));
+				ret.add(sort.get(sort.size()-i-1));
 		}
 		else if(method.equals("random")){
 			ArrayList<Integer> randIntList = new ArrayList<Integer>();
-			for(int rand=Utils.randInt(0, sortByNumberOfTweets.size()-1); randIntList.size()<D; rand=Utils.randInt(0, sortByNumberOfTweets.size()-1)){
-				if(!randIntList.contains(rand));
+			while(randIntList.size()<D){ 
+				int rand=Utils.randInt(0, sort.size()-1);
+				if(!randIntList.contains(rand)){
 					randIntList.add(rand);
+				}
 			}
 			for(int i=0;i<D;i++){
-				System.out.println(randIntList.get(i));
-				System.out.println(sortByNumberOfTweets.get(randIntList.get(i)));
-				ret.put(sortByNumberOfTweets.get(randIntList.get(i)),sortByNumberOfTweets.get(randIntList.get(i)));
+				ret.add(sort.get(randIntList.get(i)));
 			}
 		}
-		else if(method.equals("BF")){}
+		//else if(method.equals("BF")){}
 		else throw new RuntimeException();
 		return ret;
 	}
 	
 // ===== Export ArrayList ===== //
-	public static void writerAL (String filename, ArrayList<Utils.Term> x) throws IOException{
-		BufferedWriter outputWriter = new BufferedWriter(new FileWriter(FilesPath+filename));
-		for (int i = 0; i < x.size(); i++) {
-			outputWriter.write(x.get(i).toString());
-			outputWriter.newLine();
-		}
-		outputWriter.flush();  
-		outputWriter.close();  
-	}
+//	public static void writerAL (String filename, ArrayList<Utils.Term> x) throws IOException{
+//		BufferedWriter outputWriter = new BufferedWriter(new FileWriter(FilesPath+filename));
+//		for (int i = 0; i < x.size(); i++) {
+//			outputWriter.write(x.get(i).toString());
+//			outputWriter.newLine();
+//		}
+//		outputWriter.flush();  
+//		outputWriter.close();  
+//	}
 	
 
 }
