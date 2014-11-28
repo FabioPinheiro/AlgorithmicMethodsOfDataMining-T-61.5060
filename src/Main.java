@@ -167,7 +167,6 @@ public class Main {
 		ArrayList<String>  subspaceHashMap = subspace(method, d, sortByNumberOfTweets);
 		BufferedWriter outputWriter = Utils.getBufferWriter(method, d);
 		
-		//LINHAS
 		for(int line = 0;  (line<50000 || UseAllData) && (stringLine = reader.readLine()) != null; line++){
 			//if(line%QuerrySize==0)System.out.println("dataReduction(): line:" + line);
 
@@ -202,7 +201,7 @@ public class Main {
 		for(int k=0; k<QuerrySize;k++){
 			querrys.add(data.getNextTweet());
 		}
-		
+		System.gc();
 		long startTime = System.currentTimeMillis();
 		
 		for(Utils.Tweet twt = data.getNextTweet(); twt != null; twt = data.getNextTweet()){
@@ -235,7 +234,7 @@ public class Main {
 		for(int k=0; k<QuerrySize;k++){
 			querrys.add(data.getNextTweet());
 		}
-		
+		System.gc();
 		long startTime = System.currentTimeMillis();
 		
 		for(Utils.Tweet twt = data.getNextOptimisticTweet(angle); twt != null; twt = data.getNextTweet()){
@@ -261,7 +260,7 @@ public class Main {
 	
 /// ===== TASK 4 ===== ///
 	public static long task4(String method, int d) throws IOException{
-		double angle = Math.PI/2;
+		double angle = Math.PI/2+Math.PI/4;
 		Utils.Data data = new Utils.Data(method, d);
 		ArrayList<Utils.Tweet> querrys = new ArrayList<Utils.Tweet>();
 		Utils.Tweet tweetMinX = null;
@@ -270,10 +269,10 @@ public class Main {
 		for(int k=0; k<QuerrySize;k++){
 			querrys.add(data.getNextTweet());
 		}
-		
+		System.gc();
 		long startTime = System.currentTimeMillis();
 		
-		for(Utils.Tweet twt = data.getNextOptimisticTweet(angle - Math.PI/4); twt != null; twt = data.getNextTweet()){
+		for(Utils.Tweet twt = data.getNextOptimisticTweet(angle - Math.PI/10); twt != null; twt = data.getNextTweet()){
 			for(Utils.Tweet querryX : querrys){
 				double aux = angleTweetAlphabet(querryX, twt);
 				if(aux<angle){
@@ -287,7 +286,7 @@ public class Main {
 		long totalTime = endTime - startTime;
 		
 		System.out.println("Querry: index: " + tweetMinX.index +",  #Term: " + tweetMinX.numberOfTerms + ",  Terms: " + tweetMinX.listOfTerms );
-		System.out.println("NearestY: index: " + tweetMinY.index +",  #Tren: " + tweetMinY.numberOfTerms + ",  text: " + tweetMinY.listOfTerms );
+		System.out.println("NearestY: index: " + tweetMinY.index +",  #Tern: " + tweetMinY.numberOfTerms + ",  text: " + tweetMinY.listOfTerms );
 		System.out.println("Angle:" + angle +"   Time elapsed: " + totalTime + "ms");
 		return totalTime;
 	}
