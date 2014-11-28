@@ -169,7 +169,7 @@ public class Main {
 		
 		//LINHAS
 		for(int line = 0;  (line<5000 || UseAllData) && (stringLine = reader.readLine()) != null; line++){
-			if(line%QuerrySize==0)System.out.println("dataReduction(): line:" + line);
+			//if(line%QuerrySize==0)System.out.println("dataReduction(): line:" + line);
 			String[]  tokens = stringLine.split("\\s+");
 			
 			//ArrayList<Valor> listOfTerms = new ArrayList<Valor>();
@@ -244,8 +244,6 @@ public class Main {
 		}
 		long endTime   = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
-		
-		System.out.println(angleMinX.index );
 		
 		System.out.println("NearestX: index: " + angleMinX.index +",  #Tren: " + angleMinX.numberOfTerms + ",  text: " + angleMinX.listOfTerms );
 		System.out.println("NearestY: index: " + angleMinY.index +",  #Tren: " + angleMinY.numberOfTerms + ",  text: " + angleMinY.listOfTerms );
@@ -455,8 +453,6 @@ public class Main {
 					randIntList.add(rand);
 			}
 			for(int i=0;i<D;i++){
-				System.out.println(randIntList.get(i));
-				System.out.println(sortByNumberOfTweets.get(randIntList.get(i)));
 				ret.put(sortByNumberOfTweets.get(randIntList.get(i)),sortByNumberOfTweets.get(randIntList.get(i)));
 			}
 		}
