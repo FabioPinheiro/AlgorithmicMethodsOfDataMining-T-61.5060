@@ -20,30 +20,49 @@ import java.util.Random;
 
 
 public class Utils {
-	// ===== Class Valor ===== //
-	public static class Trem implements Serializable{
+	
+	// ===== Class Term ===== //
+	public static class Term implements Serializable{
 		final String text;
 		int numberOfTweets;
-		public Trem(String text) {
+		public Term(String text) {
 			this.text = text;
 			this.numberOfTweets = 0;
 		}
 		public String toString(){
-			return this.text;
+			return this.text + "," + this.numberOfTweets;
 		}
 	}
+	
+	// ===== Export ArrayList of Terms ===== //
+		public static void writerALTerms (String filename, ArrayList<Term> x) throws IOException{
+			BufferedWriter outputWriter = new BufferedWriter(new FileWriter(filename));
+			for (int i = 0; i < x.size(); i++) {
+				outputWriter.write(x.get(i).toString());
+				outputWriter.newLine();
+			}
+			outputWriter.flush();  
+			outputWriter.close();  
+		}
+	
+	
+	
+	
+	
+	
+	
 	// ===== Class Tweet ===== //
 	public static class Tweet {
-		ArrayList<String> listOfTrems;
-		int numberOfTrems;
+		ArrayList<String> listOfTerms;
+		int numberOfTerms;
 		int index;
 		public Tweet(int index, int numberOfTrems, ArrayList<String> listOfTrems) {
 			this.index = index;
-			this.listOfTrems = listOfTrems;
-			this.numberOfTrems = numberOfTrems;
+			this.listOfTerms = listOfTrems;
+			this.numberOfTerms = numberOfTrems;
 		}
 		public String toString(){
-			return " numberOfTrems: " + numberOfTrems + " trems: " + this.listOfTrems.toString() + "<<<";
+			return " numberOfTrems: " + numberOfTerms + " trems: " + this.listOfTerms.toString() + "<<<";
 		}
 	}
 	// ===== Enum Method ===== //
@@ -152,7 +171,7 @@ public class Utils {
 			buffer = getBufferReader(method, d);
 		}
 		public Tweet getNextTweet() throws IOException{
-			ArrayList<String> listOfTrems = new ArrayList<String>();
+			ArrayList<String> listOfTerms = new ArrayList<String>();
 			String stringLine = buffer.readLine();
 			if(stringLine == null){
 				buffer.close();
@@ -162,9 +181,9 @@ public class Utils {
 			int index = Integer.parseInt(tokens[0]);
 			int numberOfTrems = Integer.parseInt(tokens[1]);
 			for(int ii=2;ii<tokens.length;ii++){
-				listOfTrems.add(tokens[ii]);
+				listOfTerms.add(tokens[ii]);
 			}
-			return new Tweet(index, numberOfTrems, listOfTrems);
+			return new Tweet(index, numberOfTrems, listOfTerms);
 		}
 	}
 	// ===== FILES NAMES ===== //
@@ -175,7 +194,7 @@ public class Utils {
 		return new BufferedReader(new FileReader(Main.FilesPath +"dataReduction" + "_Method:" + method +  "_D:"+d ));
 	}
 	// ===== Export ArrayList ===== //
-	public static void writer (String filename, long[] x) throws IOException{
+	public static void writer(String filename, long[] x) throws IOException{
 		BufferedWriter outputWriter = new BufferedWriter(new FileWriter(Main.FilesPath+filename));
 		for (int i = 0; i < x.length; i++) {
 			outputWriter.write(String.valueOf(x[i]));
@@ -184,35 +203,36 @@ public class Utils {
 		outputWriter.flush();
 		outputWriter.close();
 	}
-	// ===== Serialize SortByNumberOfTweets ===== //
-	public static void writerSortByNumberOfTweets(ArrayList<String> sortByNumberOfTweets) throws IOException{
-		//serialize the List
-		OutputStream file = new FileOutputStream(Main.FileTremsSortedByNumberOfTweets);
-		OutputStream buffer = new BufferedOutputStream(file);
-		ObjectOutput output = new ObjectOutputStream(buffer);
-		
-		output.writeObject(sortByNumberOfTweets);
-		output.flush();
-		output.close();
-	}
-	// ===== Deserialize SortByNumberOfTweets ===== //
-	public static ArrayList<String> readSortByNumberOfTweets() throws IOException{
-		
-		//deserialize the quarks.ser file
-		InputStream file = new FileInputStream(Main.FileTremsSortedByNumberOfTweets);
-		InputStream buffer = new BufferedInputStream(file);
-		ObjectInput input = new ObjectInputStream (buffer);
-		//deserialize the List
-		ArrayList<String> recoveredSortByNumberOfTweets = null;
-		try {
-			recoveredSortByNumberOfTweets = (ArrayList<String>)input.readObject();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		input.close();
-		return recoveredSortByNumberOfTweets;
-	}
+//	// ===== Serialize SortByNumberOfTweets ===== //
+//	public static void writerSortByNumberOfTweets(ArrayList<String> sortByNumberOfTweets) throws IOException{
+//		//serialize the List
+//		OutputStream file = new FileOutputStream(Main.FileTermsSortedByNumberOfTweets);
+//		OutputStream buffer = new BufferedOutputStream(file);
+//		ObjectOutput output = new ObjectOutputStream(buffer);
+//		
+//		output.writeObject(sortByNumberOfTweets);
+//		output.flush();
+//		output.close();
+//	}
+//	// ===== Deserialize SortByNumberOfTweets ===== //
+//	public static ArrayList<String> readSortByNumberOfTweets() throws IOException{
+//		
+//		//deserialize the quarks.ser file
+//		InputStream file = new FileInputStream(Main.FileTermsSortedByNumberOfTweets);
+//		InputStream buffer = new BufferedInputStream(file);
+//		ObjectInput input = new ObjectInputStream (buffer);
+//		//deserialize the List
+//		ArrayList<String> recoveredSortByNumberOfTweets = null;
+//		try {
+//			recoveredSortByNumberOfTweets = (ArrayList<String>)input.readObject();
+//		} catch (ClassNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		input.close();
+//		return recoveredSortByNumberOfTweets;
+//	}
+	
 	// ===== Random Number generator ===== //	
 	public static int randInt(int min, int max) {
 		Random rand = new Random();
