@@ -202,7 +202,7 @@ public class Main {
 		long startTime = System.currentTimeMillis();
 		for(Utils.Tweet querryY = data.getNextTweet(); querryY != null; querryY = data.getNextTweet()){
 			for(Utils.Tweet querryX : querrys){
-				double aux = angleTweet(querryX, querryY);
+				double aux = angleTweetAlphabet(querryX, querryY);
 				if(aux<angle){
 					angle = aux;
 					angleMinX = querryX;
@@ -230,7 +230,7 @@ public class Main {
 			querrys.add(data.getNextTweet());
 		
 		long startTime = System.currentTimeMillis();
-		for(Utils.Tweet querryY = data.getNextTweet(); querryY != null; querryY = data.getNextTweet()){
+		for(Utils.Tweet querryY = data.getNextOptimisticTweet(angle); querryY != null; querryY = data.getNextTweet()){
 			for(Utils.Tweet querryX : querrys){
 				double aux = angleTweetAlphabet(querryX, querryY);
 				if(aux<angle){
@@ -242,6 +242,9 @@ public class Main {
 		}
 		long endTime   = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
+		
+		System.out.println(angleMinX.index );
+		
 		System.out.println("NearestX: index: " + angleMinX.index +",  #Tren: " + angleMinX.numberOfTerms + ",  text: " + angleMinX.listOfTerms );
 		System.out.println("NearestY: index: " + angleMinY.index +",  #Tren: " + angleMinY.numberOfTerms + ",  text: " + angleMinY.listOfTerms );
 		System.out.println("Anglet:" + angle +"   Time elapsed: " + totalTime + "ms");
@@ -260,7 +263,7 @@ public class Main {
 			querrys.add(data.getNextTweet());
 		
 		long startTime = System.currentTimeMillis();
-		for(Utils.Tweet querryY = data.getNextTweet(); querryY != null; querryY = data.getNextTweet()){
+		for(Utils.Tweet querryY = data.getNextOptimisticTweet(angle+Math.PI); querryY != null; querryY = data.getNextTweet()){
 			for(Utils.Tweet querryX : querrys){
 				double aux = angleTweetAlphabet(querryX, querryY);
 				if(aux<angle){
@@ -379,7 +382,7 @@ public class Main {
 	
 	
 // ===== Angle ===== //
-	public static double angle(String[] x, String[] y, String method, HashMap<String, Utils.Term> subspace){
+	/*public static double angle(String[] x, String[] y, String method, HashMap<String, Utils.Term> subspace){
 		int cont = 0;
 		for(int i = 0; i< x.length; i++)
 			for(int j = 0; j< y.length; j++)
@@ -405,9 +408,9 @@ public class Main {
 				if(x.listOfTerms.get(i).equals(y.listOfTerms.get(j)))
 					cont++;
 		return Math.acos(cont/(Math.sqrt(x.numberOfTerms)*Math.sqrt(y.numberOfTerms)));
-	}
+	}*/
 
-// ===== Angle Alphabet ===== //
+	// ===== Angle Alphabet ===== //
 	public static double angleTweetAlphabet(Utils.Tweet x, Utils.Tweet y){
 		int cont = 0;
 		int i=0;
@@ -426,6 +429,11 @@ public class Main {
 		return Math.acos(cont/(Math.sqrt(x.numberOfTerms)*Math.sqrt(y.numberOfTerms)));
 	}
 	
+	// ===== Angle Optimistic ===== //
+	public static double angleTweetOptimistic(int totalTerms, int usefulTerms){
+		return Math.acos(usefulTerms/totalTerms);
+	}
+	
 	// ===== Generate Subspaces ===== //
 	public static HashMap<String, String> subspace(String method, int d, ArrayList<String> sortByNumberOfTweets){
 		HashMap<String, String> ret = new HashMap<String, String>();
@@ -440,11 +448,13 @@ public class Main {
 		}
 		else if(method.equals("random")){
 			ArrayList<Integer> randIntList = new ArrayList<Integer>();
-			for(int rand=Utils.randInt(0, sortByNumberOfTweets.size()); randIntList.size()<D; rand=Utils.randInt(0, sortByNumberOfTweets.size())){
+			for(int rand=Utils.randInt(0, sortByNumberOfTweets.size()-1); randIntList.size()<D; rand=Utils.randInt(0, sortByNumberOfTweets.size()-1)){
 				if(!randIntList.contains(rand));
 					randIntList.add(rand);
 			}
 			for(int i=0;i<D;i++){
+				System.out.println(randIntList.get(i));
+				System.out.println(sortByNumberOfTweets.get(randIntList.get(i)));
 				ret.put(sortByNumberOfTweets.get(randIntList.get(i)),sortByNumberOfTweets.get(randIntList.get(i)));
 			}
 		}

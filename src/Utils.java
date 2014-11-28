@@ -185,6 +185,25 @@ public class Utils {
 			}
 			return new Tweet(index, numberOfTrems, listOfTerms);
 		}
+		public Tweet getNextOptimisticTweet(double angle) throws IOException{
+			ArrayList<String> listOfTerms = new ArrayList<String>();
+			for (;;){
+				String stringLine = buffer.readLine();
+				if(stringLine == null){
+					buffer.close();
+					return null;
+				}
+				String[]  tokens = stringLine.split("\\s+");
+				int index = Integer.parseInt(tokens[0]);
+				int numberOfTrems = Integer.parseInt(tokens[1]);
+				if(Main.angleTweetOptimistic(numberOfTrems, tokens.length-2)<=angle){
+					for(int ii=2;ii<tokens.length;ii++){
+						listOfTerms.add(tokens[ii]);
+					}
+					return new Tweet(index, numberOfTrems, listOfTerms);
+				}//else continue;
+			}
+		}
 	}
 	// ===== FILES NAMES ===== //
 	public static BufferedWriter getBufferWriter(String method, int d) throws IOException{
