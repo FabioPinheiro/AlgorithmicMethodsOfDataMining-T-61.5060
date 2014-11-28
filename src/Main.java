@@ -21,7 +21,7 @@ public class Main {
 	public static final String FilesPath = "tmp/";
 	public static final String FileAllData = "tweets_15m.txt";
 	public static final String FileState = "State";
-	public static final String FileTermsSortedByNumberOfTweets = FilesPath+"TermsSortedByNumberOfTweets";
+	public static final String FileTermsSortedByNumberOfTweets = FilesPath+"TermsSortedByNumberOfTweets.csv";
 	
 	public static void main(String[] args) throws IOException {
 		
