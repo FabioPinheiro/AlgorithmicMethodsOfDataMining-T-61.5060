@@ -169,7 +169,8 @@ public class Main {
 		
 		//LINHAS
 		for(int line = 0;  (line<50000 || UseAllData) && (stringLine = reader.readLine()) != null; line++){
-			if(line%QuerrySize==0)System.out.println("dataReduction(): line:" + line);
+			//if(line%QuerrySize==0)System.out.println("dataReduction(): line:" + line);
+
 			String[]  tokens = stringLine.split("\\s+");
 			
 			//ArrayList<Valor> listOfTerms = new ArrayList<Valor>();
@@ -250,9 +251,11 @@ public class Main {
 		long endTime   = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
 		
+
 		System.out.println("Querry: index: " + tweetMinX.index +",  #Term: " + tweetMinX.numberOfTerms + ",  Terms: " + tweetMinX.listOfTerms );
 		System.out.println("NearestY: index: " + tweetMinY.index +",  #Tren: " + tweetMinY.numberOfTerms + ",  text: " + tweetMinY.listOfTerms );
 		System.out.println("Angle:" + angle +"   Time elapsed: " + totalTime + "ms");
+
 		return totalTime;
 	}
 	
