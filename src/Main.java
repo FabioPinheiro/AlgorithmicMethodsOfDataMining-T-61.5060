@@ -18,6 +18,7 @@ import java.util.HashMap;
 public class Main {
 	public static final Boolean UseAllData = false;
 	public static final Integer QuerrySize  = 1000;
+	public static final Integer DataSetSize  = 5000;
 	public static final String FilesPath = "tmp/";
 	public static final String FileAllData = "tweets_15m.txt";
 	public static final String FileState = "State";
@@ -42,11 +43,6 @@ public class Main {
 		
 		Utils.writerALTerms(FileTermsSortedByNumberOfTweets,sortByNumberOfTweets);
 		
-//		Utils.writerSortByNumberOfTweets(sortByNumberOfTweets); //TODO Desnecessario!
-//		sortByNumberOfTweets = null;
-//		sortByNumberOfTweets = Utils.readSortByNumberOfTweets();
-//		if(sortByNumberOfTweets ==null) System.out.println(FileTermsSortedByNumberOfTweets + " FAIL");
-
 		ArrayList<String> SortedTerms = new ArrayList<String>();
 		for(Utils.Term e : sortByNumberOfTweets){
 			SortedTerms.add(e.text);
@@ -56,10 +52,10 @@ public class Main {
 		for(String method : Utils.Methods){
 			System.out.println(">>> " + method);
 			for(int j : Utils.J){
-				if(method.equals("BF")) System.out.println("     === BRUTE FORCE ===     ");
-				else if (method.equals(Utils.Methods[0])) System.out.println("     === D-FREQUENT ===     ");
-				else if (method.equals(Utils.Methods[1])) System.out.println("     === D-INFREQUENT ===     ");
-				else if (method.equals(Utils.Methods[2])) System.out.println("     === D-RANDOM ===     ");
+				if(method.equals(Utils.Methods[0])) System.out.println("     === BRUTE FORCE ===     ");
+				else if (method.equals(Utils.Methods[1])) System.out.println("     === D-FREQUENT ===     ");
+				else if (method.equals(Utils.Methods[2])) System.out.println("     === D-INFREQUENT ===     ");
+				else if (method.equals(Utils.Methods[3])) System.out.println("     === D-RANDOM ===     ");
 				else throw new RuntimeException();
 				if(! Utils.State.isfileCreated(method, j)){
 					dataReduction( method, j, SortedTerms, mapa);
@@ -74,12 +70,12 @@ public class Main {
 			for(int d : Utils.J){
 				if(! Utils.State.isTimeSet(2, method, d)){
 					long time = task2(method, d);
-					Utils.State.setTime(2, method, d, time);;
+					Utils.State.setTime(2, method, d, time);
 				}
-				
 			}
 		}
 		
+		//===Task 3===//
 		System.out.println("-----------TASK 3-----------------");
 		
 		for(String method : Utils.Methods){
@@ -157,14 +153,13 @@ public class Main {
 		reader.close();
 		
 		return sortByNumberOfTweets;
-		
 	}
 	
 /// ===== DATA REDUCTION ===== ///
-	public static void dataReduction( String method, int d, ArrayList<String> sortByNumberOfTweets,HashMap<String, Utils.Term> mapa) throws IOException{
+	public static void dataReduction(String method, int d, ArrayList<String> sortByNumberOfTweets,HashMap<String, Utils.Term> mapa) throws IOException{
 		final BufferedReader reader = new BufferedReader(new FileReader(Main.FileAllData));
 		String stringLine;
-		HashMap<String, String>  subspaceHashMap = subspace(method, d, sortByNumberOfTweets);
+		ArrayList<String>  subspaceHashMap = subspace(method, d, sortByNumberOfTweets);
 		BufferedWriter outputWriter = Utils.getBufferWriter(method, d);
 		
 		//LINHAS
@@ -172,19 +167,14 @@ public class Main {
 			if(line%QuerrySize==0)System.out.println("dataReduction(): line:" + line);
 			String[]  tokens = stringLine.split("\\s+");
 			
-			//ArrayList<Valor> listOfTerms = new ArrayList<Valor>();
 			String listOfTermsSTRING = new String();
 			for(int ii=0;ii<tokens.length;ii++){
-				
-				String obj = (String) subspaceHashMap.get(tokens[ii]);
-				if(obj != null){
-					//listOfTerms.add(obj);
-					listOfTermsSTRING += " " + obj;
+				if(subspaceHashMap.contains(tokens[ii])){
+					listOfTermsSTRING += " " + tokens[ii];
 				}
 			}
 			outputWriter.write( line + " " + tokens.length + listOfTermsSTRING);
 			outputWriter.newLine();
-			//tweets.add(new Tweet(tokens.length, listOfTerms));
 		}
 		outputWriter.flush();
 		outputWriter.close();
@@ -195,28 +185,31 @@ public class Main {
 		double angle = Math.PI/2;
 		Utils.Data data = new Utils.Data(method, d);
 		ArrayList<Utils.Tweet> querrys = new ArrayList<Utils.Tweet>();
-		Utils.Tweet angleMinX = null;
-		Utils.Tweet angleMinY = null;
+		Utils.Tweet tweetMinX = null;
+		Utils.Tweet tweetMinY = null;
 		
-		for(int k=0; k<QuerrySize;k++) 
+		for(int k=0; k<QuerrySize;k++){
 			querrys.add(data.getNextTweet());
-		
+		}
+		System.gc();
 		long startTime = System.currentTimeMillis();
-		for(Utils.Tweet querryY = data.getNextTweet(); querryY != null; querryY = data.getNextTweet()){
+		
+		for(Utils.Tweet twt = data.getNextTweet(); twt != null; twt = data.getNextTweet()){
 			for(Utils.Tweet querryX : querrys){
-				double aux = angleTweetAlphabet(querryX, querryY);
+				double aux = angleTweetAlphabet(querryX, twt);
 				if(aux<angle){
 					angle = aux;
-					angleMinX = querryX;
-					angleMinY = querryY;
+					tweetMinX = querryX;
+					tweetMinY = twt;
 				}
 			}
 		}
 		long endTime   = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
-		System.out.println("NearestX: index: " + angleMinX.index +",  #Tren: " + angleMinX.numberOfTerms + ",  text: " + angleMinX.listOfTerms );
-		System.out.println("NearestY: index: " + angleMinY.index +",  #Tren: " + angleMinY.numberOfTerms + ",  text: " + angleMinY.listOfTerms );
-		System.out.println("Anglet:" + angle +"   Time elapsed: " + totalTime + "ms");
+		
+		//System.out.println("Querry: index: " + tweetMinX.index +",  #Term: " + tweetMinX.numberOfTerms + ",  Terms: " + tweetMinX.listOfTerms );
+		//System.out.println("NearestY: index: " + tweetMinY.index +",  #Term: " + tweetMinY.numberOfTerms + ",  Terms: " + tweetMinY.listOfTerms );
+		System.out.println("Angle:" + angle +"   Time elapsed: " + totalTime + "ms");
 		return totalTime;
 	}
 	
@@ -225,192 +218,71 @@ public class Main {
 		double angle = Math.PI/2;
 		Utils.Data data = new Utils.Data(method, d);
 		ArrayList<Utils.Tweet> querrys = new ArrayList<Utils.Tweet>();
-		Utils.Tweet angleMinX = null;
-		Utils.Tweet angleMinY = null;
+		Utils.Tweet tweetMinX = null;
+		Utils.Tweet tweetMinY = null;
 		
-		for(int k=0; k<QuerrySize;k++) 
+		for(int k=0; k<QuerrySize;k++){
 			querrys.add(data.getNextTweet());
-		
+		}
+		System.gc();
 		long startTime = System.currentTimeMillis();
-		for(Utils.Tweet querryY = data.getNextOptimisticTweet(angle); querryY != null; querryY = data.getNextTweet()){
+		
+		for(Utils.Tweet twt = data.getNextOptimisticTweet(angle); twt != null; twt = data.getNextTweet()){
 			for(Utils.Tweet querryX : querrys){
-				double aux = angleTweetAlphabet(querryX, querryY);
+				double aux = angleTweetAlphabet(querryX, twt);
 				if(aux<angle){
 					angle = aux;
-					angleMinX = querryX;
-					angleMinY = querryY;
+					tweetMinX = querryX;
+					tweetMinY = twt;
 				}
 			}
 		}
 		long endTime   = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
 		
-		System.out.println("NearestX: index: " + angleMinX.index +",  #Tren: " + angleMinX.numberOfTerms + ",  text: " + angleMinX.listOfTerms );
-		System.out.println("NearestY: index: " + angleMinY.index +",  #Tren: " + angleMinY.numberOfTerms + ",  text: " + angleMinY.listOfTerms );
-		System.out.println("Anglet:" + angle +"   Time elapsed: " + totalTime + "ms");
+
+		//System.out.println("Querry: index: " + tweetMinX.index +",  #Term: " + tweetMinX.numberOfTerms + ",  Terms: " + tweetMinX.listOfTerms );
+		//System.out.println("NearestY: index: " + tweetMinY.index +",  #Tren: " + tweetMinY.numberOfTerms + ",  text: " + tweetMinY.listOfTerms );
+		System.out.println("Angle:" + angle +"   Time elapsed: " + totalTime + "ms");
+
 		return totalTime;
 	}
 	
 /// ===== TASK 4 ===== ///
 	public static long task4(String method, int d) throws IOException{
-		double angle = Math.PI/2;
+		double angle = Math.PI/2+Math.PI/4;
 		Utils.Data data = new Utils.Data(method, d);
 		ArrayList<Utils.Tweet> querrys = new ArrayList<Utils.Tweet>();
-		Utils.Tweet angleMinX = null;
-		Utils.Tweet angleMinY = null;
+		Utils.Tweet tweetMinX = null;
+		Utils.Tweet tweetMinY = null;
 		
-		for(int k=0; k<QuerrySize;k++) 
+		for(int k=0; k<QuerrySize;k++){
 			querrys.add(data.getNextTweet());
-		
+		}
+		System.gc();
 		long startTime = System.currentTimeMillis();
-		for(Utils.Tweet querryY = data.getNextOptimisticTweet(angle+Math.PI); querryY != null; querryY = data.getNextTweet()){
+		
+		for(Utils.Tweet twt = data.getNextOptimisticTweet(angle - Math.PI/10); twt != null; twt = data.getNextTweet()){
 			for(Utils.Tweet querryX : querrys){
-				double aux = angleTweetAlphabet(querryX, querryY);
+				double aux = angleTweetAlphabet(querryX, twt);
 				if(aux<angle){
 					angle = aux;
-					angleMinX = querryX;
-					angleMinY = querryY;
+					tweetMinX = querryX;
+					tweetMinY = twt;
 				}
 			}
 		}
 		long endTime   = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
-		System.out.println("NearestX: index: " + angleMinX.index +",  #Tren: " + angleMinX.numberOfTerms + ",  text: " + angleMinX.listOfTerms );
-		System.out.println("NearestY: index: " + angleMinY.index +",  #Tren: " + angleMinY.numberOfTerms + ",  text: " + angleMinY.listOfTerms );
-		System.out.println("Anglet:" + angle +"   Time elapsed: " + totalTime + "ms");
+		
+		//System.out.println("Querry: index: " + tweetMinX.index +",  #Term: " + tweetMinX.numberOfTerms + ",  Terms: " + tweetMinX.listOfTerms );
+		//System.out.println("NearestY: index: " + tweetMinY.index +",  #Tern: " + tweetMinY.numberOfTerms + ",  text: " + tweetMinY.listOfTerms );
+		System.out.println("Angle:" + angle +"   Time elapsed: " + totalTime + "ms");
 		return totalTime;
 	}
 	
-	/*
-	public static long task3(int Q, String method, int j, ArrayList<Utils.Term> sortByNumberOfTweets) throws IOException{
-		final FileReader dataFile = new FileReader(FileAllData);
-		final LineNumberReader reader = new LineNumberReader(dataFile);
-		
-		long startTime = System.currentTimeMillis();
-		
-		if(Q>1000 || Q<1) throw new RuntimeException();
-		
-		if(method.equals("BF")) System.out.println("     === BRUTE FORCE ===     ");
-		else if (method.equals("frequent")) System.out.println("     === D-FREQUENT ===     ");
-		else if (method.equals("infrequent")) System.out.println("     === D-INFREQUENT ===     ");
-		else if (method.equals("random")) System.out.println("     === D-RANDOM ===     ");
-		else throw new RuntimeException();
-		
-		double angle = Math.PI/2;
-		int index = -1;
-		String stringLine = null;
-		String twt = null;
-		
-		for(int i=1;i<=Q;i++) stringLine = reader.readLine();
-		String[] tokensX = stringLine.split("\\s+");
-		System.out.println("Querry: " + stringLine);
-		
-		for(int k=Q; k<1000;k++) reader.readLine();
-		
-		HashMap<String, Utils.Term>Sub = subspace(method, j, sortByNumberOfTweets);
-		
-		for(int line = 0; line<80000; line++){
-			stringLine = reader.readLine();
-			String[]  tokensY = stringLine.split("\\s+");
-			
-			double aux = angle_alphabet(tokensX, tokensY, method, Sub);
-			if(aux<angle){
-				angle = aux;
-				index = reader.getLineNumber();
-				twt = stringLine;	
-			}
-		}
-		System.out.println("Nearest: " + twt );
-		System.out.println("Index of Nearest=" + index + "    Angle=" + angle);
-		
-		long endTime   = System.currentTimeMillis();
-		long totalTime = endTime - startTime;
-		System.out.println("Time elapsed: " + totalTime + "ms");
-		reader.close();
-		return totalTime;
-	}*/
-	/*
-/// ===== TASK 4 ===== ///
-	public static long task4(int Q, String method, int j, ArrayList<Utils.Term> sortByNumberOfTweets) throws IOException{
-		final FileReader dataFile = new FileReader(FileAllData);
-		final LineNumberReader reader = new LineNumberReader(dataFile);
-		
-		long startTime = System.currentTimeMillis();
-		
-		if(Q>1000 || Q<1) throw new RuntimeException();
-		
-		if(method.equals("BF")) System.out.println("     === BRUTE FORCE ===     ");
-		else if (method.equals("frequent")) System.out.println("     === D-FREQUENT ===     ");
-		else if (method.equals("infrequent")) System.out.println("     === D-INFREQUENT ===     ");
-		else if (method.equals("random")) System.out.println("     === D-RANDOM ===     ");
-		else throw new RuntimeException();
-		
-		double angle = Math.PI/2;
-		int index = -1;
-		String stringLine = null;
-		String twt = null;
-		
-		for(int i=1;i<=Q;i++) stringLine = reader.readLine();
-		String[] tokensX = stringLine.split("\\s+");
-		System.out.println("Querry: " + stringLine);
-		
-		for(int k=Q; k<1000;k++) reader.readLine();
-		
-		HashMap<String, Utils.Term> Sub = subspace(method, j, sortByNumberOfTweets);
-		
-		for(int line = 0; line<80000; line++){
-			stringLine = reader.readLine();
-			String[]  tokensY = stringLine.split("\\s+");
-			
-			double aux = angle_alphabet(tokensX, tokensY, method, Sub);
-			if(aux<=angle*1.5){
-				angle = aux;
-				index = reader.getLineNumber();
-				twt = stringLine;	
-			}
-		}
-		System.out.println("Nearest: " + twt );
-		System.out.println("Index of Nearest=" + index + "    Angle=" + angle);
-		
-		long endTime   = System.currentTimeMillis();
-		long totalTime = endTime - startTime;
-		System.out.println("Time elapsed: " + totalTime + "ms");
-		reader.close();
-		return totalTime;
-	}
-	*/
-	
-	
-// ===== Angle ===== //
-	/*public static double angle(String[] x, String[] y, String method, HashMap<String, Utils.Term> subspace){
-		int cont = 0;
-		for(int i = 0; i< x.length; i++)
-			for(int j = 0; j< y.length; j++)
-				if(method.equals("BF")){
-					if(x[i].equals(y[j])){
-						cont++;
-					}
-				}
-				else if(method.equals("frequent") || method.equals("infrequent") || method.equals("random")){
-					if(x[i].equals(y[j]) && subspace.containsKey(y[j])){
-						cont++;
-					}
-				}
-				else{
-					throw new RuntimeException();
-				}
-		return Math.acos(cont/(Math.sqrt(x.length)*Math.sqrt(y.length)));
-	}
-	public static double angleTweet(Utils.Tweet x, Utils.Tweet y){
-		int cont = 0;
-		for(int i = 0; i< x.listOfTerms.size(); i++)
-			for(int j = 0; j< y.listOfTerms.size(); j++)
-				if(x.listOfTerms.get(i).equals(y.listOfTerms.get(j)))
-					cont++;
-		return Math.acos(cont/(Math.sqrt(x.numberOfTerms)*Math.sqrt(y.numberOfTerms)));
-	}*/
 
-	// ===== Angle Alphabet ===== //
+// ===== Angle Alphabet ===== //
 	public static double angleTweetAlphabet(Utils.Tweet x, Utils.Tweet y){
 		int cont = 0;
 		int i=0;
@@ -422,55 +294,208 @@ public class Main {
 				j++;
 			}
 			else{
-				if(x.listOfTerms.get(i).compareTo(y.listOfTerms.get(j))<0) i++;  
-				else j++;
+				if(x.listOfTerms.get(i).compareTo(y.listOfTerms.get(j))<0){
+					i++;  
+				}
+				else{
+					j++;
+				}
 			}
 		}
 		return Math.acos(cont/(Math.sqrt(x.numberOfTerms)*Math.sqrt(y.numberOfTerms)));
 	}
 	
-	// ===== Angle Optimistic ===== //
+// ===== Angle Optimistic ===== //
 	public static double angleTweetOptimistic(int totalTerms, int usefulTerms){
 		return Math.acos(usefulTerms/totalTerms);
 	}
 	
-	// ===== Generate Subspaces ===== //
-	public static HashMap<String, String> subspace(String method, int d, ArrayList<String> sortByNumberOfTweets){
-		HashMap<String, String> ret = new HashMap<String, String>();
+// ===== Generate Subspaces ===== //
+	public static ArrayList<String> subspace(String method, int d, ArrayList<String> sort){
+		ArrayList<String> ret = new ArrayList<String>();
 		int D = 100*2^d;
 		if(method.equals("frequent")){
 			for(int i=0; i<D; i++)
-				ret.put(sortByNumberOfTweets.get(i),sortByNumberOfTweets.get(i));
+				ret.add(sort.get(i));
 		}
 		else if(method.equals("infrequent")){
 			for(int i =0; i<D; i++)
-				ret.put(sortByNumberOfTweets.get(sortByNumberOfTweets.size()-i-1),sortByNumberOfTweets.get(sortByNumberOfTweets.size()-i-1));
+				ret.add(sort.get(sort.size()-i-1));
 		}
 		else if(method.equals("random")){
 			ArrayList<Integer> randIntList = new ArrayList<Integer>();
-			for(int rand=Utils.randInt(0, sortByNumberOfTweets.size()-1); randIntList.size()<D; rand=Utils.randInt(0, sortByNumberOfTweets.size()-1)){
-				if(!randIntList.contains(rand));
+			while(randIntList.size()<D){ 
+				int rand=Utils.randInt(0, sort.size()-1);
+				if(!randIntList.contains(rand)){
 					randIntList.add(rand);
+				}
 			}
 			for(int i=0;i<D;i++){
-				ret.put(sortByNumberOfTweets.get(randIntList.get(i)),sortByNumberOfTweets.get(randIntList.get(i)));
+				ret.add(sort.get(randIntList.get(i)));
 			}
 		}
-		else if(method.equals("BF")){}
+		else if(method.equals("BruteForce")){
+			ret = sort;
+		}
 		else throw new RuntimeException();
 		return ret;
 	}
-	
-// ===== Export ArrayList ===== //
-	public static void writerAL (String filename, ArrayList<Utils.Term> x) throws IOException{
-		BufferedWriter outputWriter = new BufferedWriter(new FileWriter(FilesPath+filename));
-		for (int i = 0; i < x.size(); i++) {
-			outputWriter.write(x.get(i).toString());
-			outputWriter.newLine();
-		}
-		outputWriter.flush();  
-		outputWriter.close();  
-	}
-	
-
 }
+
+
+
+
+
+
+
+
+//=========GARBAGE=============//
+
+
+
+
+//===== Export ArrayList ===== //
+//	public static void writerAL (String filename, ArrayList<Utils.Term> x) throws IOException{
+//		BufferedWriter outputWriter = new BufferedWriter(new FileWriter(FilesPath+filename));
+//		for (int i = 0; i < x.size(); i++) {
+//			outputWriter.write(x.get(i).toString());
+//			outputWriter.newLine();
+//		}
+//		outputWriter.flush();  
+//		outputWriter.close();  
+//	}
+
+
+/*
+public static long task3(int Q, String method, int j, ArrayList<Utils.Term> sortByNumberOfTweets) throws IOException{
+	final FileReader dataFile = new FileReader(FileAllData);
+	final LineNumberReader reader = new LineNumberReader(dataFile);
+	
+	long startTime = System.currentTimeMillis();
+	
+	if(Q>1000 || Q<1) throw new RuntimeException();
+	
+	if(method.equals("BF")) System.out.println("     === BRUTE FORCE ===     ");
+	else if (method.equals("frequent")) System.out.println("     === D-FREQUENT ===     ");
+	else if (method.equals("infrequent")) System.out.println("     === D-INFREQUENT ===     ");
+	else if (method.equals("random")) System.out.println("     === D-RANDOM ===     ");
+	else throw new RuntimeException();
+	
+	double angle = Math.PI/2;
+	int index = -1;
+	String stringLine = null;
+	String twt = null;
+	
+	for(int i=1;i<=Q;i++) stringLine = reader.readLine();
+	String[] tokensX = stringLine.split("\\s+");
+	System.out.println("Querry: " + stringLine);
+	
+	for(int k=Q; k<1000;k++) reader.readLine();
+	
+	HashMap<String, Utils.Term>Sub = subspace(method, j, sortByNumberOfTweets);
+	
+	for(int line = 0; line<80000; line++){
+		stringLine = reader.readLine();
+		String[]  tokensY = stringLine.split("\\s+");
+		
+		double aux = angle_alphabet(tokensX, tokensY, method, Sub);
+		if(aux<angle){
+			angle = aux;
+			index = reader.getLineNumber();
+			twt = stringLine;	
+		}
+	}
+	System.out.println("Nearest: " + twt );
+	System.out.println("Index of Nearest=" + index + "    Angle=" + angle);
+	
+	long endTime   = System.currentTimeMillis();
+	long totalTime = endTime - startTime;
+	System.out.println("Time elapsed: " + totalTime + "ms");
+	reader.close();
+	return totalTime;
+}*/
+/*
+/// ===== TASK 4 ===== ///
+public static long task4(int Q, String method, int j, ArrayList<Utils.Term> sortByNumberOfTweets) throws IOException{
+	final FileReader dataFile = new FileReader(FileAllData);
+	final LineNumberReader reader = new LineNumberReader(dataFile);
+	
+	long startTime = System.currentTimeMillis();
+	
+	if(Q>1000 || Q<1) throw new RuntimeException();
+	
+	if(method.equals("BF")) System.out.println("     === BRUTE FORCE ===     ");
+	else if (method.equals("frequent")) System.out.println("     === D-FREQUENT ===     ");
+	else if (method.equals("infrequent")) System.out.println("     === D-INFREQUENT ===     ");
+	else if (method.equals("random")) System.out.println("     === D-RANDOM ===     ");
+	else throw new RuntimeException();
+	
+	double angle = Math.PI/2;
+	int index = -1;
+	String stringLine = null;
+	String twt = null;
+	
+	for(int i=1;i<=Q;i++) stringLine = reader.readLine();
+	String[] tokensX = stringLine.split("\\s+");
+	System.out.println("Querry: " + stringLine);
+	
+	for(int k=Q; k<1000;k++) reader.readLine();
+	
+	HashMap<String, Utils.Term> Sub = subspace(method, j, sortByNumberOfTweets);
+	
+	for(int line = 0; line<80000; line++){
+		stringLine = reader.readLine();
+		String[]  tokensY = stringLine.split("\\s+");
+		
+		double aux = angle_alphabet(tokensX, tokensY, method, Sub);
+		if(aux<=angle*1.5){
+			angle = aux;
+			index = reader.getLineNumber();
+			twt = stringLine;	
+		}
+	}
+	System.out.println("Nearest: " + twt );
+	System.out.println("Index of Nearest=" + index + "    Angle=" + angle);
+	
+	long endTime   = System.currentTimeMillis();
+	long totalTime = endTime - startTime;
+	System.out.println("Time elapsed: " + totalTime + "ms");
+	reader.close();
+	return totalTime;
+}
+*/
+
+
+//===== Angle ===== //
+/*public static double angle(String[] x, String[] y, String method, HashMap<String, Utils.Term> subspace){
+	int cont = 0;
+	for(int i = 0; i< x.length; i++)
+		for(int j = 0; j< y.length; j++)
+			if(method.equals("BF")){
+				if(x[i].equals(y[j])){
+					cont++;
+				}
+			}
+			else if(method.equals("frequent") || method.equals("infrequent") || method.equals("random")){
+				if(x[i].equals(y[j]) && subspace.containsKey(y[j])){
+					cont++;
+				}
+			}
+			else{
+				throw new RuntimeException();
+			}
+	return Math.acos(cont/(Math.sqrt(x.length)*Math.sqrt(y.length)));
+}
+public static double angleTweet(Utils.Tweet x, Utils.Tweet y){
+	int cont = 0;
+	for(int i = 0; i< x.listOfTerms.size(); i++)
+		for(int j = 0; j< y.listOfTerms.size(); j++)
+			if(x.listOfTerms.get(i).equals(y.listOfTerms.get(j)))
+				cont++;
+	return Math.acos(cont/(Math.sqrt(x.numberOfTerms)*Math.sqrt(y.numberOfTerms)));
+}*/
+
+//Utils.writerSortByNumberOfTweets(sortByNumberOfTweets); //TODO Desnecessario!
+//sortByNumberOfTweets = null;
+//sortByNumberOfTweets = Utils.readSortByNumberOfTweets();
+//if(sortByNumberOfTweets ==null) System.out.println(FileTermsSortedByNumberOfTweets + " FAIL");
