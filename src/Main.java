@@ -16,7 +16,7 @@ import java.util.HashMap;
 ///// =============== FINAL PROJECT ================ /////
 
 public class Main {
-	public static final Boolean UseAllData = false;
+	public static final Boolean UseAllData = true;
 	public static final Integer QuerrySize  = 1000;
 	public static final Integer DataSetSize  = 5000;
 	public static final String FilesPath = "tmp/";
@@ -164,7 +164,7 @@ public class Main {
 		
 		//LINHAS
 		for(int line = 0;  (line<5000 || UseAllData) && (stringLine = reader.readLine()) != null; line++){
-			if(line%QuerrySize==0)System.out.println("dataReduction(): line:" + line);
+			if(line%100000==0)System.out.println("dataReduction(): line:" + line);
 			String[]  tokens = stringLine.split("\\s+");
 			
 			String listOfTermsSTRING = new String();
