@@ -16,7 +16,7 @@ import java.util.HashMap;
 ///// =============== FINAL PROJECT ================ /////
 
 public class Main {
-	public static final Boolean UseAllData = true;
+	public static final Boolean UseAllData = false;
 	public static final Integer QuerrySize  = 1000;
 	public static final Integer DataSetSize  = 5000;
 	public static final String FilesPath = "tmp/";
@@ -51,55 +51,39 @@ public class Main {
 		//===Data Reduction===//
 		for(String method : Utils.Methods){
 			System.out.println(">>> " + method);
+			if(method.equals(Utils.Methods[0])) System.out.println("     === BRUTE FORCE ===     ");
+			else if (method.equals(Utils.Methods[1])) System.out.println("     === D-FREQUENT ===     ");
+			else if (method.equals(Utils.Methods[2])) System.out.println("     === D-INFREQUENT ===     ");
+			else if (method.equals(Utils.Methods[3])) System.out.println("     === D-RANDOM ===     ");
+			else throw new RuntimeException();
+			
 			for(int j : Utils.J){
-				if(method.equals(Utils.Methods[0])) System.out.println("     === BRUTE FORCE ===     ");
-				else if (method.equals(Utils.Methods[1])) System.out.println("     === D-FREQUENT ===     ");
-				else if (method.equals(Utils.Methods[2])) System.out.println("     === D-INFREQUENT ===     ");
-				else if (method.equals(Utils.Methods[3])) System.out.println("     === D-RANDOM ===     ");
-				else throw new RuntimeException();
 				if(! Utils.State.isfileCreated(method, j)){
 					dataReduction( method, j, SortedTerms, mapa);
 					Utils.State.fileCreated(method, j);
 				}
-			}
-		}
-		
-		//===Task 2===//
-		System.out.println("-----------TASK 2-----------------");
-		for(String method : Utils.Methods){
-			for(int d : Utils.J){
-				if(! Utils.State.isTimeSet(2, method, d)){
-					long time = task2(method, d);
-					Utils.State.setTime(2, method, d, time);
+				//===Task 2===//
+				System.out.println("-----------TASK 2-----------------");
+				if(! Utils.State.isTimeSet(2, method, j)){
+					long time = task2(method, j);
+					Utils.State.setTime(2, method, j, time);
 				}
-			}
-		}
-		
-		//===Task 3===//
-		System.out.println("-----------TASK 3-----------------");
-		
-		for(String method : Utils.Methods){
-			for(int d : Utils.J){
-				if(! Utils.State.isTimeSet(3, method, d)){
-					long time = task3(method, d);
-					Utils.State.setTime(3, method, d, time);;
+				//===Task 3===//
+				System.out.println("-----------TASK 3-----------------");
+				if(! Utils.State.isTimeSet(3, method, j)){
+					long time = task3(method, j);
+					Utils.State.setTime(3, method, j, time);;
 				}
+				//===Task 4===//
+				System.out.println("-----------TASK 4-----------------");
+				if(! Utils.State.isTimeSet(4, method, j)){
+					long time = task4(method, j);
+					Utils.State.setTime(4, method, j, time);;
+				}
+				Utils.deleteData( method, j);
 				
 			}
 		}
-		
-		System.out.println("-----------TASK 4-----------------");
-		
-		for(String method : Utils.Methods){
-			for(int d : Utils.J){
-				if(! Utils.State.isTimeSet(4, method, d)){
-					long time = task4(method, d);
-					Utils.State.setTime(4, method, d, time);;
-				}
-				
-			}
-		}
-		
 		Utils.State.print();
 	}
 	
@@ -262,7 +246,7 @@ public class Main {
 		System.gc();
 		long startTime = System.currentTimeMillis();
 		
-		for(Utils.Tweet twt = data.getNextOptimisticTweet(angle - Math.PI/10); twt != null; twt = data.getNextTweet()){
+		for(Utils.Tweet twt = data.getNextOptimisticTweet(angle - Math.PI/10); twt != null; twt = data.getNextOptimisticTweet(angle - Math.PI/10)){
 			for(Utils.Tweet querryX : querrys){
 				double aux = angleTweetAlphabet(querryX, twt);
 				if(aux<angle){

@@ -14,6 +14,8 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -64,8 +66,8 @@ public class Utils {
 	
 	// ===== Class State ===== //
 	public static class State implements Serializable{
-		private static boolean[][] makeFiles = new boolean[4][9];
-		private static long[][][] timeTasks = new long [3][4][9];
+		private static boolean[][] makeFiles = new boolean[4][8];
+		private static long[][][] timeTasks = new long [3][4][8];
 		private static int tasksToInt(int t){
 			return t-2;
 		}
@@ -105,7 +107,7 @@ public class Utils {
 			BufferedWriter outputWriter = new BufferedWriter(new FileWriter(Main.FilesPath+Main.FileState));
 			for(int i = 0; i < 3; i++) {
 				String aux = new String();
-				for(int j = 0; j < 9; j++)
+				for(int j = 0; j < 8; j++)
 					aux += makeFiles[i][j] + " ";
 				outputWriter.write(aux);
 				outputWriter.newLine();
@@ -115,7 +117,7 @@ public class Utils {
 			for(int k = 0; k < 3; k++) {
 				for(int i = 0; i < 3; i++){
 					String aux = new String();
-					for(int j = 0; j < 9; j++)
+					for(int j = 0; j < 8; j++)
 						aux += timeTasks[k][i][j]  + " ";
 					outputWriter.write(aux);
 					outputWriter.newLine();
@@ -135,7 +137,7 @@ public class Utils {
 					throw new RuntimeException();
 				}
 				String[]  tokens = stringLine.split("\\s+");
-				for(int j = 0; j < 9; j++){
+				for(int j = 0; j < 8; j++){
 					makeFiles[i][j] = Boolean.parseBoolean(tokens[j]);
 				}
 			}
@@ -150,7 +152,7 @@ public class Utils {
 						throw new RuntimeException();
 					}
 					String[]  tokens = stringLine.split("\\s+");
-					for(int j = 0; j < 9; j++)
+					for(int j = 0; j < 8; j++)
 						timeTasks[k][i][j] = Long.parseLong(tokens[j]);
 				}
 			}
@@ -241,6 +243,9 @@ public class Utils {
 	}
 	public static BufferedReader getBufferReader(String method, int d) throws IOException{
 		return new BufferedReader(new FileReader(Main.FilesPath +"dataReduction" + "_Method:" + method +  "_D:"+d ));
+	}
+	public static void deleteData(String method, int d) throws IOException{
+		Files.deleteIfExists(Paths.get(Main.FilesPath +"dataReduction" + "_Method:" + method +  "_D:"+d ));
 	}
 	
 	// ===== Export ArrayList ===== //
